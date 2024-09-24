@@ -7,9 +7,11 @@ import java.util.Optional;
 
 public interface ProductPort {
 
-    DomainProduct save(DomainProduct product);
+    DomainProduct addProduct(DomainProduct product);
 
     Optional<DomainProduct> findById(Long id);
+
+    DomainProduct findByCode(String code);
 
     void deleteById(Long id);
 

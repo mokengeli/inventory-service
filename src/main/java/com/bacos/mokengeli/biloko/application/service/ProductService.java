@@ -16,7 +16,7 @@ public class ProductService {
     }
 
     public DomainProduct createProduct(DomainProduct product) {
-        return productPort.save(product);
+        return productPort.addProduct(product);
     }
 
     public DomainProduct getProductById(Long productId) {
@@ -29,7 +29,7 @@ public class ProductService {
         existingProduct.setName(productDetails.getName());
         //existingProduct.setCategory(productDetails.getCategory());
         //existingProduct.setDescription(productDetails.getDescription());
-        return productPort.save(existingProduct);
+        return productPort.addProduct(existingProduct);
     }
 
     public void deleteProduct(Long productId) {

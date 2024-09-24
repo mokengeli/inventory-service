@@ -14,9 +14,10 @@ import java.time.LocalDateTime;
 public class DomainProduct {
 
     private Long id;
-    private String tenantCode;  // Ajout du tenantId pour la gestion multi-tenant
+    private String tenantCode;
+    private String code;
     private String name;
-    private String category;
+    private DomainCategory category;
     private String description;
     private String unitOfMeasure;
     private double volume;  // Volume unitaire du produit

@@ -11,13 +11,12 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DomainStockMovement {
-    private Long id;
-    private Long articleId;
-    private String employeeNumber;  // Ajout du tenantId pour la traçabilité
-    private String movementType;  // ENTREE ou SORTIE
-    private double totalVolume;
-    private LocalDateTime movementDate;
-    private LocalDateTime createdAt;
-}
+public class DomainCategory {
 
+    private Long id;
+    private String name;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+
+}

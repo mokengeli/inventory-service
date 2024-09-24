@@ -19,11 +19,10 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "code", nullable = false, unique = true)
-    private String code;
-
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;  // Nom de la catégorie (ex : "Boisson")
+    //@Column(name = "tenant_code", nullable = false)
+   // private String tenantCode;
 
     @Column(name = "description")
     private String description;  // Description de la catégorie

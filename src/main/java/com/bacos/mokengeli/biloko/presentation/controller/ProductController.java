@@ -1,5 +1,6 @@
 package com.bacos.mokengeli.biloko.presentation.controller;
 
+import com.bacos.mokengeli.biloko.application.domain.DomainCategory;
 import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
 import com.bacos.mokengeli.biloko.application.service.ProductService;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,8 @@ public class ProductController {
         DomainProduct createdProduct = productService.createProduct(product);
         return ResponseEntity.ok(createdProduct);
     }
+
+
 
     // Récupérer un produit par son ID
     @GetMapping("/{productId}")

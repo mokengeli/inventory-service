@@ -13,7 +13,7 @@ public class StockMovementMapper {
                 .articleId(stockMovement.getArticle().getId())
                 .articleId(stockMovement.getArticle().getId())
                 .movementType(stockMovement.getMovementType())
-                .quantityMoved(stockMovement.getQuantityMoved())
+                .totalVolume(stockMovement.getQuantityMoved())
                 .movementDate(stockMovement.getMovementDate())
                 .createdAt(stockMovement.getCreatedAt())
                 .build();
@@ -24,7 +24,8 @@ public class StockMovementMapper {
         stockMovement.setId(domainStockMovement.getId());
         // On récupère uniquement l'id du produit et de l'article
         stockMovement.setMovementType(domainStockMovement.getMovementType());
-        stockMovement.setQuantityMoved(domainStockMovement.getQuantityMoved());
+        stockMovement.setEmployeeNumber(domainStockMovement.getEmployeeNumber());
+        stockMovement.setQuantityMoved(domainStockMovement.getTotalVolume());
         stockMovement.setMovementDate(domainStockMovement.getMovementDate());
         stockMovement.setCreatedAt(domainStockMovement.getCreatedAt());
         return stockMovement;

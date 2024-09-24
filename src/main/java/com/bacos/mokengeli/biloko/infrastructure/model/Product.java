@@ -33,8 +33,9 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;  // Catégorie du produit (ex : "Boisson")
 
-    @Column(name = "unit_of_measure", nullable = false)
-    private String unitOfMeasure;  // Unité de mesure (ex : "Litre", "Kg")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_of_measure_id", nullable = false)
+    private UnitOfMeasure unitOfMeasure;  // Unité de mesure (ex : "Litre", "Kg")
 
     @Column(name = "volume", nullable = false)
     private double volume;  // Volume par unité (ex : 1,5 L par bouteille)

@@ -1,9 +1,6 @@
 package com.bacos.mokengeli.biloko.application.service;
 
-import com.bacos.mokengeli.biloko.application.domain.DomainArticle;
-import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
-import com.bacos.mokengeli.biloko.application.domain.DomainStockAuditLog;
-import com.bacos.mokengeli.biloko.application.domain.DomainStockMovement;
+import com.bacos.mokengeli.biloko.application.domain.*;
 import com.bacos.mokengeli.biloko.application.port.ArticlePort;
 import com.bacos.mokengeli.biloko.application.port.ProductPort;
 import com.bacos.mokengeli.biloko.application.port.StockAuditLogPort;
@@ -23,28 +20,29 @@ public class ArticleService {
     private final ProductPort productPort;
     private final StockMovementPort stockMovementPort;
     private final StockAuditLogPort stockAuditLogPort;
+    private final UserAppService userAppService;
 
     @Autowired
     public ArticleService(ArticlePort articlePort, ProductPort productPort,
-                          StockMovementPort stockMovementPort, StockAuditLogPort stockAuditLogPort) {
+                          StockMovementPort stockMovementPort, StockAuditLogPort stockAuditLogPort, UserAppService userAppService) {
         this.articlePort = articlePort;
         this.productPort = productPort;
         this.stockMovementPort = stockMovementPort;
         this.stockAuditLogPort = stockAuditLogPort;
+        this.userAppService = userAppService;
     }
 
     @Transactional
-    public DomainArticle addArticleToInventory(Long productId, int numberOfUnits) {
-        String employeeNumber ="";
+    public DomainArticle addArticleToInventory(String productCode, int numberOfUnits) {
+        String employeeNumber = this.userAppService.getConnectedEmployeeNumber();
         // Récupérer le produit via le port en filtrant par productId et tenantId
-        DomainProduct product = productPort.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found for with id: " + productId));
+        DomainProduct product = productPort.findByCode(productCode);
 
         // Calculer le volume total à ajouter
         double totalVolumeToAdd = product.getVolume() * numberOfUnits;
 
         // Vérifier s'il existe déjà un article pour ce produit
-        Optional<DomainArticle> existingArticleOpt = articlePort.findByProductId(productId);
+        Optional<DomainArticle> existingArticleOpt = articlePort.findByProductId(product.getId());
 
         DomainArticle domainArticle;
         if (existingArticleOpt.isPresent()) {
@@ -55,6 +53,7 @@ public class ArticleService {
                     .id(existingArticle.getId())
                     .productId(existingArticle.getProductId())
                     .totalVolume(updatedTotalVolume)
+                    .createdAt(existingArticle.getCreatedAt())
                     .updatedAt(LocalDateTime.now())
                     .build();
         } else {
@@ -65,29 +64,21 @@ public class ArticleService {
                     .createdAt(LocalDateTime.now())
                     .build();
         }
-
         // Sauvegarder l'article via le port
         domainArticle = articlePort.save(domainArticle);
-
         // Créer un mouvement de stock de type ENTREE
         DomainStockMovement stockMovement = DomainStockMovement.builder()
                 .articleId(domainArticle.getId())
-                .movementType("ENTREE")
-                .quantityMoved(totalVolumeToAdd)
+                .movementType(MovementTypeEnum.ADD_ARTICLE.name())
+                .employeeNumber(employeeNumber)
+                .totalVolume(totalVolumeToAdd)
                 .movementDate(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build();
-        stockMovementPort.save(stockMovement);
 
-        // Créer un log d'audit pour tracer l'ajout de stock
-        DomainStockAuditLog auditLog = DomainStockAuditLog.builder()
-                .stockMovementId(stockMovement.getId())
-                .employeeNumber(employeeNumber)
-                .actionType("CREATE")
-                .description("Ajout de " + numberOfUnits + " unités pour le produit ID " + productId)
-                .createdAt(LocalDateTime.now())
-                .build();
-        stockAuditLogPort.save(auditLog);
+
+        // stockAuditLogPort.save(auditLog);
+        stockMovementPort.createAndLogAudit(stockMovement);
 
         return domainArticle;
     }
