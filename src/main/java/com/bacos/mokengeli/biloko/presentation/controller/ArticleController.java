@@ -26,24 +26,7 @@ public class ArticleController {
         return ResponseEntity.ok(createdArticle);
     }
 
-    // Récupérer un article par ID
-    @GetMapping("/{articleId}")
-    public ResponseEntity<DomainArticle> getArticleById(@PathVariable Long articleId) {
-        DomainArticle article = articleService.getArticleById(articleId);
-        return ResponseEntity.ok(article);
-    }
 
-    // Lister les articles pour un produit
-    @GetMapping("/product/{productId}")
-    public ResponseEntity<List<DomainArticle>> getAllArticlesByProductId(@PathVariable Long productId) {
-        List<DomainArticle> articles = articleService.getAllArticlesByProductId(productId);
-        return ResponseEntity.ok(articles);
-    }
 
-    // Supprimer un article
-    @DeleteMapping("/{articleId}")
-    public ResponseEntity<Void> deleteArticle(@PathVariable Long articleId) {
-        articleService.deleteArticle(articleId);
-        return ResponseEntity.noContent().build();
-    }
+
 }

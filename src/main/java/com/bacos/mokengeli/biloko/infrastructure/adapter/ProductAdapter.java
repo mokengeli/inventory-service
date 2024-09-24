@@ -11,10 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 public class ProductAdapter implements ProductPort {
@@ -53,21 +51,6 @@ public class ProductAdapter implements ProductPort {
         return ProductMapper.toDomain(product);
     }
 
-    @Override
-    public void deleteById(Long id) {
-        productRepository.deleteById(id);
-    }
 
-    @Override
-    public List<DomainProduct> findAllByTenantCode(String tenantCode) {
-        return productRepository.findAllByTenantCode(tenantCode)
-                .stream()
-                .map(ProductMapper::toDomain)
-                .collect(Collectors.toList());
-    }
 
-    @Override
-    public Optional<DomainProduct> getProductByIdAndTenantId(Long productId, Long tenantId) {
-        return Optional.empty();
-    }
 }

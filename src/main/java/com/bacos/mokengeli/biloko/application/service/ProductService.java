@@ -24,19 +24,5 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
-    public DomainProduct updateProduct(Long productId, DomainProduct productDetails) {
-        DomainProduct existingProduct = getProductById(productId);
-        existingProduct.setName(productDetails.getName());
-        //existingProduct.setCategory(productDetails.getCategory());
-        //existingProduct.setDescription(productDetails.getDescription());
-        return productPort.addProduct(existingProduct);
-    }
 
-    public void deleteProduct(Long productId) {
-        productPort.deleteById(productId);
-    }
-
-    public List<DomainProduct> getAllProductsForTenant(String tenantCode) {
-        return productPort.findAllByTenantCode(tenantCode);
-    }
 }

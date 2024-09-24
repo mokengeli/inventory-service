@@ -13,10 +13,7 @@ public interface ProductPort {
 
     DomainProduct findByCode(String code);
 
-    void deleteById(Long id);
 
-    List<DomainProduct> findAllByTenantCode(String tenantCode);
 
-    Optional<DomainProduct> getProductByIdAndTenantId(Long productId, Long tenantId);
 
 }

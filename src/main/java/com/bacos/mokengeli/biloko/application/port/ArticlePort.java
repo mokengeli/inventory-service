@@ -9,11 +9,6 @@ public interface ArticlePort {
 
     DomainArticle save(DomainArticle article);
 
-    Optional<DomainArticle> findById(Long id);
-
     Optional<DomainArticle> findByProductId(Long productId);
 
-    void deleteById(Long id);
-
-    List<DomainArticle> findAllByProductId(Long productId);
 }

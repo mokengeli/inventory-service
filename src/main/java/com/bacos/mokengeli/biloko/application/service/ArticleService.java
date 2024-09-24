@@ -1,9 +1,11 @@
 package com.bacos.mokengeli.biloko.application.service;
 
-import com.bacos.mokengeli.biloko.application.domain.*;
+import com.bacos.mokengeli.biloko.application.domain.DomainArticle;
+import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
+import com.bacos.mokengeli.biloko.application.domain.DomainStockMovement;
+import com.bacos.mokengeli.biloko.application.domain.MovementTypeEnum;
 import com.bacos.mokengeli.biloko.application.port.ArticlePort;
 import com.bacos.mokengeli.biloko.application.port.ProductPort;
-import com.bacos.mokengeli.biloko.application.port.StockAuditLogPort;
 import com.bacos.mokengeli.biloko.application.port.StockMovementPort;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,16 +21,14 @@ public class ArticleService {
     private final ArticlePort articlePort;
     private final ProductPort productPort;
     private final StockMovementPort stockMovementPort;
-    private final StockAuditLogPort stockAuditLogPort;
     private final UserAppService userAppService;
 
     @Autowired
     public ArticleService(ArticlePort articlePort, ProductPort productPort,
-                          StockMovementPort stockMovementPort, StockAuditLogPort stockAuditLogPort, UserAppService userAppService) {
+                          StockMovementPort stockMovementPort, UserAppService userAppService) {
         this.articlePort = articlePort;
         this.productPort = productPort;
         this.stockMovementPort = stockMovementPort;
-        this.stockAuditLogPort = stockAuditLogPort;
         this.userAppService = userAppService;
     }
 
@@ -77,25 +77,12 @@ public class ArticleService {
                 .build();
 
 
-        // stockAuditLogPort.save(auditLog);
         stockMovementPort.createAndLogAudit(stockMovement);
 
         return domainArticle;
     }
 
 
-    public DomainArticle getArticleById(Long articleId) {
-        return articlePort.findById(articleId)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
-    }
-
-    public List<DomainArticle> getAllArticlesByProductId(Long productId) {
-        return articlePort.findAllByProductId(productId);
-    }
-
-    public void deleteArticle(Long articleId) {
-        articlePort.deleteById(articleId);
-    }
 
 
 }

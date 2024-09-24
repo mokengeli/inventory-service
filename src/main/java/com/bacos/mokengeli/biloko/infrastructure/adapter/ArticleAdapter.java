@@ -36,11 +36,6 @@ public class ArticleAdapter implements ArticlePort {
         return ArticleMapper.toDomain(savedArticle);
     }
 
-    @Override
-    public Optional<DomainArticle> findById(Long id) {
-        return articleRepository.findById(id)
-                .map(ArticleMapper::toDomain);
-    }
 
     @Override
     public Optional<DomainArticle> findByProductId(Long productId) {
@@ -48,16 +43,5 @@ public class ArticleAdapter implements ArticlePort {
         return article.map(ArticleMapper::toDomain);  // Mapping Article to DomainArticle
     }
 
-    @Override
-    public void deleteById(Long id) {
-        articleRepository.deleteById(id);
-    }
 
-    @Override
-    public List<DomainArticle> findAllByProductId(Long productId) {
-        return articleRepository.findAllByProductId(productId)
-                .stream()
-                .map(ArticleMapper::toDomain)
-                .collect(Collectors.toList());
-    }
 }
