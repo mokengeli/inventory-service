@@ -9,6 +9,7 @@ import com.bacos.mokengeli.biloko.infrastructure.repository.ProductRepository;
 import com.bacos.mokengeli.biloko.infrastructure.repository.UnitOfMeasureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -27,16 +28,23 @@ public class ProductAdapter implements ProductPort {
     }
 
     @Override
-    public DomainProduct addProduct(DomainProduct domainProduct) {
+    public Optional<DomainProduct> addProduct(DomainProduct domainProduct) throws ServiceException {
+
         Product product = ProductMapper.toEntity(domainProduct);
+
+
         String unitOfMeasure = domainProduct.getUnitOfMeasure();
         UnitOfMeasure unitOfMeasure1 = this.unitOfMeasureRepository.findByName(unitOfMeasure)
-                .orElseThrow(() -> new RuntimeException("No unit of measure found with name: " + unitOfMeasure));
+                .orElseThrow(() -> new ServiceException(UUID.randomUUID().toString(), "No unit of measure found with name: " + unitOfMeasure));
         product.setCreatedAt(LocalDateTime.now());
         product.setUnitOfMeasure(unitOfMeasure1);
         product.setCode(UUID.randomUUID().toString());
-        Product savedProduct = productRepository.save(product);
-        return ProductMapper.toDomain(savedProduct);
+        try {
+            Product savedProduct = productRepository.save(product);
+            return Optional.of(ProductMapper.toDomain(savedProduct));
+        } catch (Exception e) {
+            throw new ServiceException(UUID.randomUUID().toString(), e.getMessage());
+        }
     }
 
     @Override
@@ -46,11 +54,11 @@ public class ProductAdapter implements ProductPort {
     }
 
     @Override
-    public DomainProduct findByCode(String code) {
-        Product product = this.productRepository.findByCode(code).orElseThrow(() -> new RuntimeException("No product found with code: " + code));
-        return ProductMapper.toDomain(product);
-    }
+    public Optional<DomainProduct> findByCode(String code) {
+        Optional<Product> optionalProduct = this.productRepository.findByCode(code);
+        return optionalProduct.map(ProductMapper::toDomain);
 
+    }
 
 
 }

@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface ArticlePort {
 
-    DomainArticle save(DomainArticle article);
+    Optional<DomainArticle> save(DomainArticle article);
 
     Optional<DomainArticle> findByProductId(Long productId);
 

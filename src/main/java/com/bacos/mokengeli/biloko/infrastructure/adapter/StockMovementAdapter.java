@@ -9,6 +9,8 @@ import com.bacos.mokengeli.biloko.infrastructure.repository.ArticleRepository;
 import com.bacos.mokengeli.biloko.infrastructure.repository.StockMovementRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class StockMovementAdapter implements StockMovementPort {
 
@@ -21,10 +23,13 @@ public class StockMovementAdapter implements StockMovementPort {
     }
 
     @Override
-    public DomainStockMovement createAndLogAudit(DomainStockMovement domainStockMovement) {
+    public Optional<DomainStockMovement> createAndLogAudit(DomainStockMovement domainStockMovement) {
         Long articleId = domainStockMovement.getArticleId();
-        Article article = this.articleRepository.findById(articleId)
-                .orElseThrow();
+        Optional<Article> optArticle = this.articleRepository.findById(articleId);
+        if (optArticle.isEmpty()) {
+            return Optional.empty();
+        }
+        Article article = optArticle.get();
         StockMovement stockMovement = StockMovementMapper.toEntity(domainStockMovement);
         String unitOfMeasure = article.getProduct().getUnitOfMeasure().getName();
         stockMovement.setDescription("Ajout de " + domainStockMovement.getTotalVolume() +
@@ -32,7 +37,7 @@ public class StockMovementAdapter implements StockMovementPort {
         stockMovement.setArticle(article);
         stockMovement = stockMovementRepository.save(stockMovement);
 
-        return StockMovementMapper.toDomain(stockMovement);  // Returning saved entity mapped to DomainStockMovement
+        return Optional.of(StockMovementMapper.toDomain(stockMovement));  // Returning saved entity mapped to DomainStockMovement
     }
 
 

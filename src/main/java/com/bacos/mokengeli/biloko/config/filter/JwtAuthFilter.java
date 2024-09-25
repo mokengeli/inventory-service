@@ -1,7 +1,7 @@
 package com.bacos.mokengeli.biloko.config.filter;
 
+import com.bacos.mokengeli.biloko.application.domain.model.ConnectedUser;
 import com.bacos.mokengeli.biloko.config.service.JwtService;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -10,15 +10,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -55,15 +55,33 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             if (jwtService.validateToken(token)) {
-                List<GrantedAuthority> grantedAuthorities = jwtService.getAuthoritiesFromJWT(token);
+                String tenantCode = this.jwtService.getTenantCode(token);
+                List<String> roles = this.jwtService.getRoles(token);
+                List<String> permissions = this.jwtService.getPermissions(token);
+                List<GrantedAuthority> grantedAuthorities = getAuthoritiesFromJWT(permissions);
 
+                ConnectedUser connectedUser = createUser(username, tenantCode, roles, permissions);
                 UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(username, null, grantedAuthorities);
+                        new UsernamePasswordAuthenticationToken(connectedUser, null, grantedAuthorities);
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private ConnectedUser createUser(String username, String tenantCode, List<String> roles, List<String> permissions) {
+
+        return ConnectedUser.builder()
+                .employeeNumber(username)
+                .tenantCode(tenantCode)
+                .roles(roles)
+                .permissions(permissions)
+                .build();
+    }
+
+    public List<GrantedAuthority> getAuthoritiesFromJWT(List<String> authorities) {
+        return authorities.stream().map(x -> new SimpleGrantedAuthority(x)).collect(Collectors.toList());
     }
 }

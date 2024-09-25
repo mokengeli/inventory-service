@@ -27,13 +27,17 @@ public class ArticleAdapter implements ArticlePort {
     }
 
     @Override
-    public DomainArticle save(DomainArticle domainArticle) {
-        Product product = this.productRepository.findById(domainArticle.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+    public Optional<DomainArticle> save(DomainArticle domainArticle) {
+
+        Optional<Product> optionalProduct = this.productRepository.findById(domainArticle.getProductId());
+        if (optionalProduct.isEmpty()) {
+            return Optional.empty();
+        }
+        Product product = optionalProduct.get();
         Article article = ArticleMapper.toEntity(domainArticle);
         article.setProduct(product);
         Article savedArticle = articleRepository.save(article);
-        return ArticleMapper.toDomain(savedArticle);
+        return Optional.of(ArticleMapper.toDomain(savedArticle));
     }
 
 

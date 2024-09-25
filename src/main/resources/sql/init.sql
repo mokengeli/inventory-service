@@ -5,7 +5,7 @@ VALUES
     ('UNITE');
 
 INSERT INTO inventory_service_schema.categories (id,  name, created_at)
-VALUES (1, 'Beverage', '2024-09-18');
+VALUES (1, 'LIQUIDE', '2024-09-18');
 
 
 

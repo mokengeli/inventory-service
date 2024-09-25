@@ -4,17 +4,21 @@ import com.bacos.mokengeli.biloko.application.domain.DomainArticle;
 import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
 import com.bacos.mokengeli.biloko.application.domain.DomainStockMovement;
 import com.bacos.mokengeli.biloko.application.domain.MovementTypeEnum;
+import com.bacos.mokengeli.biloko.application.domain.model.ConnectedUser;
+import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.port.ArticlePort;
 import com.bacos.mokengeli.biloko.application.port.ProductPort;
 import com.bacos.mokengeli.biloko.application.port.StockMovementPort;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
+@Slf4j
 @Service
 public class ArticleService {
 
@@ -33,10 +37,26 @@ public class ArticleService {
     }
 
     @Transactional
-    public DomainArticle addArticleToInventory(String productCode, int numberOfUnits) {
-        String employeeNumber = this.userAppService.getConnectedEmployeeNumber();
+    public DomainArticle addArticleToInventory(String productCode, int numberOfUnits) throws ServiceException {
+
+        ConnectedUser connectedUser = this.userAppService.getConnectedUser();
+        String employeeNumber = connectedUser.getEmployeeNumber();
         // Récupérer le produit via le port en filtrant par productId et tenantId
-        DomainProduct product = productPort.findByCode(productCode);
+        Optional<DomainProduct> optProduct = productPort.findByCode(productCode);
+        if (optProduct.isEmpty()) {
+            String errorId = UUID.randomUUID().toString();
+            log.error("[{}]: User [{}] try to add article with non existing product code [{}]", errorId, employeeNumber, productCode);
+            throw new ServiceException(errorId, "The product does not exist");
+        }
+
+        DomainProduct product = optProduct.get();
+        if (!this.userAppService.isAdminUser()
+                && !product.getTenantCode().equals(connectedUser.getTenantCode())) {
+            String errorId = UUID.randomUUID().toString();
+            log.error("[{}]: User [{}] of tenant [{}] try to add article of tenant [{}] to the stock", errorId, employeeNumber, connectedUser.getTenantCode(), product.getTenantCode());
+            throw new ServiceException(errorId, "You can't add item owning by another partener");
+        }
+
 
         // Calculer le volume total à ajouter
         double totalVolumeToAdd = product.getVolume() * numberOfUnits;
@@ -65,7 +85,14 @@ public class ArticleService {
                     .build();
         }
         // Sauvegarder l'article via le port
-        domainArticle = articlePort.save(domainArticle);
+        Optional<DomainArticle> optionalDomainArticle = articlePort.save(domainArticle);
+        if (optionalDomainArticle.isEmpty()) {
+            String errorId = UUID.randomUUID().toString();
+            log.error("[{}]: User [{}]. Something went wrong while adding article of product code [{}] ", errorId, employeeNumber, productCode);
+            throw new ServiceException(errorId, "Something went wrong while adding the product.");
+        }
+
+        domainArticle = optionalDomainArticle.get();
         // Créer un mouvement de stock de type ENTREE
         DomainStockMovement stockMovement = DomainStockMovement.builder()
                 .articleId(domainArticle.getId())
@@ -77,12 +104,15 @@ public class ArticleService {
                 .build();
 
 
-        stockMovementPort.createAndLogAudit(stockMovement);
+        Optional<DomainStockMovement> logAudit = stockMovementPort.createAndLogAudit(stockMovement);
+        if (logAudit.isEmpty()) {
+            String errorId = UUID.randomUUID().toString();
+            log.error("[{}]: User [{}]. Error occured when registering the stock movement of product [{}]", errorId, employeeNumber, productCode);
+            throw new ServiceException(errorId, "Technical error occured when registering the stock movement.");
+        }
 
         return domainArticle;
     }
-
-
 
 
 }

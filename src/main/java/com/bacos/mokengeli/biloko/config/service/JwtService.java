@@ -58,16 +58,14 @@ public class JwtService {
 
     public Boolean validateToken(String token) {
         final String username = extractUsername(token);
-        return ( username!=null && !isTokenExpired(token));
+        return (username != null && !isTokenExpired(token));
     }
-
 
 
     private Key getSignKey() {
         // byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
-
 
 
     private static String populateAuthorities(Collection<? extends GrantedAuthority> collection) {
@@ -79,10 +77,24 @@ public class JwtService {
     }
 
 
-
     public List<GrantedAuthority> getAuthoritiesFromJWT(String token) {
         Claims claims = extractAllClaims(token);
         List<String> authorities = claims.get("roles", List.class);
         return authorities.stream().map(x -> new SimpleGrantedAuthority(x)).collect(Collectors.toList());
+    }
+
+    public String getTenantCode(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("tenantCode", String.class);
+    }
+
+    public List<String> getRoles(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("roles", List.class);
+    }
+
+    public List<String> getPermissions(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("permissions", List.class);
     }
 }

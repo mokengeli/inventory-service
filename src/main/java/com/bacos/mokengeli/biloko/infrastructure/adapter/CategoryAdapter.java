@@ -1,6 +1,7 @@
 package com.bacos.mokengeli.biloko.infrastructure.adapter;
 
 import com.bacos.mokengeli.biloko.application.domain.DomainCategory;
+import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.port.CategoryPort;
 import com.bacos.mokengeli.biloko.infrastructure.mapper.CategoryMapper;
 import com.bacos.mokengeli.biloko.infrastructure.model.Category;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Component
 public class CategoryAdapter implements CategoryPort {
@@ -21,10 +23,15 @@ public class CategoryAdapter implements CategoryPort {
     }
 
     @Override
-    public DomainCategory addCategory(DomainCategory category) {
-        Category cat = CategoryMapper.toEntity(category);
-        cat.setCreatedAt(LocalDateTime.now());
-        Category save = this.categoryRepository.save(cat);
-        return CategoryMapper.toDomain(save);
+    public DomainCategory addCategory(DomainCategory category) throws ServiceException {
+        try {
+            Category cat = CategoryMapper.toEntity(category);
+            cat.setCreatedAt(LocalDateTime.now());
+
+            Category save = this.categoryRepository.save(cat);
+            return CategoryMapper.toDomain(save);
+        } catch (Exception e) {
+            throw new ServiceException(UUID.randomUUID().toString(), e.getMessage());
+        }
     }
 }

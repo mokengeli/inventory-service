@@ -1,9 +1,13 @@
 package com.bacos.mokengeli.biloko.presentation.controller;
 
 import com.bacos.mokengeli.biloko.application.domain.DomainArticle;
+import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.service.ArticleService;
+import com.bacos.mokengeli.biloko.presentation.exception.ResponseStatusWrapperException;
 import com.bacos.mokengeli.biloko.presentation.model.ArticleRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,14 +23,17 @@ public class ArticleController {
     }
 
     // Créer un nouvel article pour un produit
+    @PreAuthorize("hasAuthority('EDIT_INVENTORY')")
     @PostMapping("/add")
     public ResponseEntity<DomainArticle> addArticle(@RequestBody ArticleRequest articleRequest) {
-        DomainArticle createdArticle = articleService.addArticleToInventory(articleRequest.getProductCode(),
-                articleRequest.getNumberOfUnits());
-        return ResponseEntity.ok(createdArticle);
+        try {
+            DomainArticle createdArticle = articleService.addArticleToInventory(articleRequest.getProductCode(),
+                    articleRequest.getNumberOfUnits());
+            return ResponseEntity.ok(createdArticle);
+        } catch (ServiceException e) {
+            throw new ResponseStatusWrapperException(HttpStatus.BAD_REQUEST, e.getMessage(), e.getTechnicalId());
+        }
     }
-
-
 
 
 }
