@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class ProductAdapter implements ProductPort {
@@ -57,6 +57,22 @@ public class ProductAdapter implements ProductPort {
     public Optional<DomainProduct> findByCode(String code) {
         Optional<Product> optionalProduct = this.productRepository.findByCode(code);
         return optionalProduct.map(ProductMapper::toDomain);
+
+    }
+
+    @Override
+    public boolean isAllProductOfTenantCode(List<Long> productIds, String tenantCode) {
+        return this.productRepository.isAllProductOfTenantCode(productIds, tenantCode, productIds.size());
+    }
+
+    @Override
+    public Optional<List<DomainProduct>> findByIds(List<Long> productIds) {
+        Optional<List<Product>> optionalProducts = this.productRepository.findByIds(productIds);
+        return Optional.of(optionalProducts
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(ProductMapper::toDomain)
+                .toList());
 
     }
 

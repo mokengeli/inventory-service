@@ -14,7 +14,7 @@ public interface ProductPort {
 
     Optional<DomainProduct> findByCode(String code);
 
+    boolean isAllProductOfTenantCode(List<Long> productIds, String tenantCode);
 
-
-
+    Optional<List<DomainProduct>> findByIds(List<Long> id);
 }
