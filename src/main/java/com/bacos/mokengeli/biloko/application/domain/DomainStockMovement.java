@@ -16,8 +16,11 @@ public class DomainStockMovement {
     private Long articleId;
     private String employeeNumber;  // Ajout du tenantId pour la traçabilité
     private String movementType;  // ENTREE ou SORTIE
-    private double totalVolume;
+    private double oldQuantity;
+    private double quantityMoved;
+    private double newQuantity;
+    private String observation;
+    private String unitOfMeasure;
     private LocalDateTime movementDate;
-    private LocalDateTime createdAt;
 }
 

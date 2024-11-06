@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class DomainArticle {
     private Long id;
     private Long productId;
-    private double totalVolume;
+    private double quantity;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

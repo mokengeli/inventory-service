@@ -11,7 +11,7 @@ public class ArticleMapper {
         return DomainArticle.builder()
                 .id(article.getId())
                 .productId(article.getProduct().getId())
-                .totalVolume(article.getTotalVolume())
+                .quantity(article.getQuantity())
                 .createdAt(article.getCreatedAt())
                 .updatedAt(article.getUpdatedAt())
                 .build();
@@ -20,7 +20,7 @@ public class ArticleMapper {
     public Article toEntity(DomainArticle domainArticle) {
         Article article = new Article();
         article.setId(domainArticle.getId());
-        article.setTotalVolume(domainArticle.getTotalVolume());
+        article.setQuantity(domainArticle.getQuantity());
         article.setCreatedAt(domainArticle.getCreatedAt());
         article.setUpdatedAt(domainArticle.getUpdatedAt());
         return article;

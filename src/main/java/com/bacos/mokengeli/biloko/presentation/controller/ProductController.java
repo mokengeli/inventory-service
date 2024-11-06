@@ -4,7 +4,6 @@ import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
 import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.service.ProductService;
 import com.bacos.mokengeli.biloko.presentation.exception.ResponseStatusWrapperException;
-import com.bacos.mokengeli.biloko.presentation.model.IdsProductRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,6 +56,5 @@ public class ProductController {
             throw new ResponseStatusWrapperException(HttpStatus.BAD_REQUEST, e.getMessage(), e.getTechnicalId());
         }
     }
-
 
 }

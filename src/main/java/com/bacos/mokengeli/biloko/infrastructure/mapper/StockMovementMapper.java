@@ -11,11 +11,11 @@ public class StockMovementMapper {
         return DomainStockMovement.builder()
                 .id(stockMovement.getId())
                 .articleId(stockMovement.getArticle().getId())
-                .articleId(stockMovement.getArticle().getId())
                 .movementType(stockMovement.getMovementType())
-                .totalVolume(stockMovement.getQuantityMoved())
+                .quantityMoved(stockMovement.getQuantityMoved())
                 .movementDate(stockMovement.getMovementDate())
-                .createdAt(stockMovement.getCreatedAt())
+                .unitOfMeasure(stockMovement.getUnitOfMeasure())
+                .observation(stockMovement.getObservation())
                 .build();
     }
 
@@ -25,9 +25,12 @@ public class StockMovementMapper {
         // On récupère uniquement l'id du produit et de l'article
         stockMovement.setMovementType(domainStockMovement.getMovementType());
         stockMovement.setEmployeeNumber(domainStockMovement.getEmployeeNumber());
-        stockMovement.setQuantityMoved(domainStockMovement.getTotalVolume());
+        stockMovement.setOldQuantity(domainStockMovement.getOldQuantity());
+        stockMovement.setQuantityMoved(domainStockMovement.getQuantityMoved());
+        stockMovement.setNewQuantity(domainStockMovement.getNewQuantity());
         stockMovement.setMovementDate(domainStockMovement.getMovementDate());
-        stockMovement.setCreatedAt(domainStockMovement.getCreatedAt());
+        stockMovement.setUnitOfMeasure(domainStockMovement.getUnitOfMeasure());
+        stockMovement.setObservation(domainStockMovement.getObservation());
         return stockMovement;
     }
 }

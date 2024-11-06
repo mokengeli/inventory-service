@@ -24,8 +24,8 @@ public class Article {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;  // Référence au produit (ex : "Bouteille d'eau minérale Volvic")
 
-    @Column(name = "total_volume", nullable = false)
-    private double totalVolume;  // Volume total pour cet article (ex : 1,5 * 5 = 7,5 L)
+    @Column(name = "quantity", nullable = false)
+    private double quantity;  // Volume total pour cet article (ex : 1,5 * 5 = 7,5 L)
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

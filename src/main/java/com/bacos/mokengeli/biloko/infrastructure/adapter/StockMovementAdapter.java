@@ -9,6 +9,8 @@ import com.bacos.mokengeli.biloko.infrastructure.repository.ArticleRepository;
 import com.bacos.mokengeli.biloko.infrastructure.repository.StockMovementRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -31,13 +33,23 @@ public class StockMovementAdapter implements StockMovementPort {
         }
         Article article = optArticle.get();
         StockMovement stockMovement = StockMovementMapper.toEntity(domainStockMovement);
-        String unitOfMeasure = article.getProduct().getUnitOfMeasure().getName();
-        stockMovement.setDescription("Ajout de " + domainStockMovement.getTotalVolume() +
-                " [" + unitOfMeasure + "] pour le produit de code " + article.getProduct().getCode());
         stockMovement.setArticle(article);
         stockMovement = stockMovementRepository.save(stockMovement);
 
         return Optional.of(StockMovementMapper.toDomain(stockMovement));  // Returning saved entity mapped to DomainStockMovement
+    }
+
+    @Override
+    public Optional<List<DomainStockMovement>> createAndLogAuditList(List<DomainStockMovement> domainStockMovements) {
+        List<DomainStockMovement> domainStockMovementList = new ArrayList<>();
+        for (DomainStockMovement domainStockMovement : domainStockMovements) {
+            domainStockMovement = this.createAndLogAudit(domainStockMovement)
+                    .orElseThrow(() -> new RuntimeException("Domain stock movement not created"));
+
+            domainStockMovementList.add(domainStockMovement);
+        }
+
+        return Optional.of(domainStockMovementList);
     }
 
 

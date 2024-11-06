@@ -21,8 +21,8 @@ public class StockMovement {
     private Long id;
     @Column(name = "employee_number", nullable = false)
     private String employeeNumber;
-    @Column(name = "description")
-    private String description;
+    @Column(name = "observation")
+    private String observation;
 
     @ManyToOne
     @JoinColumn(name = "article_id", nullable = false)
@@ -31,15 +31,19 @@ public class StockMovement {
     @Column(name = "movement_type", nullable = false)
     private String movementType;  // Type de mouvement : "ENTREE" ou "SORTIE"
 
+    @Column(name = "old_quantity", nullable = false)
+    private double oldQuantity;
+
     @Column(name = "quantity_moved", nullable = false)
     private double quantityMoved;  // Quantité déplacée (ex : 3 litres pour une sortie de stock)
+
+    @Column(name = "new_quantity", nullable = false)
+    private double newQuantity;
+
+    @Column(name = "unit_of_measure", nullable = false)
+    private String unitOfMeasure;
 
     @Column(name = "movement_date", nullable = false)
     private LocalDateTime movementDate;  // Date du mouvement
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 }

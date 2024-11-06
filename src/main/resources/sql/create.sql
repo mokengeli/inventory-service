@@ -37,7 +37,7 @@ CREATE TABLE inventory_service_schema.products (
 CREATE TABLE inventory_service_schema.articles (
                                                    id SERIAL PRIMARY KEY,
                                                    product_id INT NOT NULL REFERENCES inventory_service_schema.products(id),
-                                                   total_volume DOUBLE PRECISION NOT NULL,  -- Volume total (ex: 1,5 * 5 = 7,5 L)
+                                                   quantity DOUBLE PRECISION NOT NULL,  -- Volume total (ex: 1,5 * 5 = 7,5 L)
                                                    created_at TIMESTAMP NOT NULL,
                                                    updated_at TIMESTAMP
 );
@@ -48,11 +48,13 @@ CREATE TABLE inventory_service_schema.articles (
 CREATE TABLE inventory_service_schema.stock_movements (
                                                           id SERIAL PRIMARY KEY,
                                                           employee_number VARCHAR(100) NOT NULL,  -- Numéro de l'employé, récupéré via user-service
-                                                          description TEXT,
+                                                          observation TEXT,
                                                           article_id INT NOT NULL REFERENCES inventory_service_schema.articles(id),
                                                           movement_type VARCHAR(50) NOT NULL,   -- ENTREE ou SORTIE
-                                                          quantity_moved DOUBLE PRECISION NOT NULL,  -- Quantité déplacée
+                                                          old_quantity DOUBLE PRECISION NOT NULL,  --
+                                                          quantity_moved DOUBLE PRECISION NOT NULL,  --
+                                                          new_quantity DOUBLE PRECISION NOT NULL,  --
+                                                          unit_of_measure VARCHAR(50) NOT NULL,
                                                           movement_date TIMESTAMP NOT NULL,
-                                                          created_at TIMESTAMP NOT NULL,
                                                           updated_at TIMESTAMP
 );
