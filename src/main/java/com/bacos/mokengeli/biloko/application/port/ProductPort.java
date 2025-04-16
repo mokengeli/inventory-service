@@ -5,6 +5,7 @@ import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface ProductPort {
 
@@ -17,4 +18,10 @@ public interface ProductPort {
     boolean isAllProductOfTenantCode(List<Long> productIds, String tenantCode);
 
     Optional<List<DomainProduct>> findByIds(List<Long> id);
+
+    Optional<List<DomainProduct>> getAllProducts();
+
+    Optional<List<DomainProduct>> getAllProductsByTenant(String tenantCode);
+
+    Set<String> getAllUnitOfMeasurement();
 }

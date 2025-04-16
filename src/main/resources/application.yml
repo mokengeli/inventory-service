@@ -5,7 +5,7 @@ spring:
   application:
     name: inventory-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/inventory_service_db
+    url: jdbc:postgresql://localhost:5432/mokengeli_biloko_db
     username: user1
     password: password
     driver-class-name: org.postgresql.Driver
@@ -31,6 +31,8 @@ eureka:
   instance:
     prefer-ip-address: true  # Utilise l'adresse IP pour l'enregistrement (utile pour les environnements containerisés)
 
-
+springdoc:
+  api-docs:
+    group: inventory
 
 

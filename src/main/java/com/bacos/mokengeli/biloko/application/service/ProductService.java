@@ -24,14 +24,21 @@ public class ProductService {
 
     public DomainProduct createProduct(DomainProduct product) throws ServiceException {
         try {
-            productPort.addProduct(product);
+            Optional<DomainProduct> domainProduct = productPort.addProduct(product);
+            if (domainProduct.isEmpty()) {
+                ConnectedUser connectedUser = this.userAppService.getConnectedUser();
+                String uuid = UUID.randomUUID().toString();
+                log.error("[{}]: User [{}]. {}", uuid,
+                        connectedUser.getEmployeeNumber(), "Aucun produit créé");
+                throw new ServiceException(uuid, "Aucun produit n'a été créé");
+            }
+            return domainProduct.get();
         } catch (ServiceException e) {
             ConnectedUser connectedUser = this.userAppService.getConnectedUser();
             log.error("[{}]: User [{}]. {}", e.getTechnicalId(),
                     connectedUser.getEmployeeNumber(), e.getMessage());
             throw new ServiceException(e.getTechnicalId(), "Technical Error");
         }
-        return null;
     }
 
     public DomainProduct getProductById(Long productId) throws ServiceException {
@@ -71,5 +78,28 @@ public class ProductService {
         }
         Optional<List<DomainProduct>> products = this.productPort.findByIds(productIds);
         return products.orElseGet(ArrayList::new);
+    }
+
+    public boolean isProductExistAndOfTheSomeOrganisation(List<Long> idsProduct) {
+        ConnectedUser connectedUser = this.userAppService.getConnectedUser();
+        String tenantCode = connectedUser.getTenantCode();
+        return this.productPort.isAllProductOfTenantCode(idsProduct, tenantCode);
+    }
+
+    public List<DomainProduct> getAllProductsByOrganisation() {
+
+        if (this.userAppService.isAdminUser()) {
+            Optional<List<DomainProduct>> domainProducts = this.productPort.getAllProducts();
+            return domainProducts.orElse(Collections.emptyList());
+        }
+        ConnectedUser connectedUser = this.userAppService.getConnectedUser();
+        String tenantCode = connectedUser.getTenantCode();
+        Optional<List<DomainProduct>> domainProducts = this.productPort.getAllProductsByTenant(tenantCode);
+        return domainProducts.orElse(Collections.emptyList());
+    }
+
+    public Set<String> getAllUnitOfMeasurement() {
+
+        return this.productPort.getAllUnitOfMeasurement() ;
     }
 }

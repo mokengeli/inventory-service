@@ -22,4 +22,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.id IN :productIds")
     Optional<List<Product>> findByIds(@Param("productIds") List<Long> productIds);
 
+    @Query("SELECT p FROM Product p WHERE p.tenantCode = :tenantCode")
+    List<Product> getAllProductOfTenantCode(String tenantCode);
 }

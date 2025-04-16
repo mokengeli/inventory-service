@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -33,5 +36,24 @@ public class CategoryAdapter implements CategoryPort {
         } catch (Exception e) {
             throw new ServiceException(UUID.randomUUID().toString(), e.getMessage());
         }
+    }
+
+    @Override
+    public Optional<DomainCategory> findById(Long categoryId) {
+        return categoryRepository.findById(categoryId)
+                .map(CategoryMapper::toDomain);
+    }
+
+    @Override
+    public Optional<List<DomainCategory>> findAll() {
+        List<Category> all = categoryRepository.findAll();
+        if (all.isEmpty()) {
+            return Optional.empty();
+        }
+        List<DomainCategory> domainCategories = new ArrayList<>();
+        all.forEach(
+                category -> domainCategories.add(CategoryMapper.toDomain(category))
+        );
+        return Optional.of(domainCategories);
     }
 }

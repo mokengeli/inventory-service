@@ -24,6 +24,18 @@ public class ProductMapper {
                 .build();
     }
 
+    public DomainProduct toLigthDomain(Product product) {
+        return DomainProduct.builder()
+                .id(product.getId())
+                .tenantCode(product.getTenantCode())
+                .code(product.getCode())
+                .name(product.getName())
+                .unitOfMeasure(product.getUnitOfMeasure().getName())
+                .category(CategoryMapper.toDomain(product.getCategory()))
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
+                .build();
+    }
     public Product toEntity(DomainProduct domainProduct) {
         return Product.builder()
                 .id(domainProduct.getId())

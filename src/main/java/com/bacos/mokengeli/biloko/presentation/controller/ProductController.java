@@ -1,5 +1,6 @@
 package com.bacos.mokengeli.biloko.presentation.controller;
 
+import com.bacos.mokengeli.biloko.application.domain.DomainCategory;
 import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
 import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.service.ProductService;
@@ -10,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/inventory/product")
@@ -34,7 +36,7 @@ public class ProductController {
     }
 
 
-    @PreAuthorize("hasAnyAuthority('EDIT_INVENTORY','VIEW_INVENTORY')")
+    @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
     @GetMapping("/{productId}")
     public ResponseEntity<DomainProduct> getProductById(@PathVariable Long productId) {
         try {
@@ -45,16 +47,35 @@ public class ProductController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('EDIT_INVENTORY','VIEW_INVENTORY')")
+    @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
     @GetMapping("/by-ids")
     public List<DomainProduct> getProductByIds(@RequestParam("ids") List<Long> idsProduct) {
         try {
-            //List<Long> ids = idsProduct.getIds();
             return productService.getProductByIds(idsProduct);
 
         } catch (ServiceException e) {
             throw new ResponseStatusWrapperException(HttpStatus.BAD_REQUEST, e.getMessage(), e.getTechnicalId());
         }
+    }
+
+    @GetMapping("/exist-in-orga")
+    public boolean isProductExistAndOfTheSomeOrganisation(@RequestParam("ids") List<Long> idsProduct) {
+
+        return productService.isProductExistAndOfTheSomeOrganisation(idsProduct);
+    }
+
+    @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
+    @GetMapping("/all")
+    public ResponseEntity<List<DomainProduct>> getAllProduct() {
+        List<DomainProduct> domainProducts = productService.getAllProductsByOrganisation();
+        return ResponseEntity.ok(domainProducts);
+    }
+
+    @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
+    @GetMapping("/unitm/all")
+    public ResponseEntity<Set<String>> getAllUnitOfMeasurement() {
+        Set<String> unitOfM = productService.getAllUnitOfMeasurement();
+        return ResponseEntity.ok(unitOfM);
     }
 
 }

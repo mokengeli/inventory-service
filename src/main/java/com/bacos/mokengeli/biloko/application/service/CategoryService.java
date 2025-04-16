@@ -9,6 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 @Slf4j
 @Service
 public class CategoryService {
@@ -31,5 +35,24 @@ public class CategoryService {
                     connectedUser.getEmployeeNumber(), e.getMessage());
             throw new ServiceException(e.getTechnicalId(), "Technical Error");
         }
+    }
+
+    public DomainCategory getCategoryById(Long categoryId) throws ServiceException {
+        ConnectedUser connectedUser = this.userAppService.getConnectedUser();
+        String employeeNumber = connectedUser.getEmployeeNumber();
+
+
+        return categoryPort.findById(categoryId)
+                .orElseThrow(() -> {
+                    String errorId = UUID.randomUUID().toString();
+                    String errorMsg = "Category id = " + categoryId + " not found";
+                    log.error("[{}]: User [{}]. {}", errorId, employeeNumber, errorMsg);
+                    return new ServiceException(errorId, "Technical Error");
+                });
+    }
+
+    public List<DomainCategory> getAllCategories() {
+        return categoryPort.findAll().orElse(new ArrayList<>());
+
     }
 }

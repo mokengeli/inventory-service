@@ -76,5 +76,34 @@ public class ProductAdapter implements ProductPort {
 
     }
 
+    @Override
+    public Optional<List<DomainProduct>> getAllProducts() {
+        List<Product> products = this.productRepository.findAll();
+        if (products.isEmpty()) {
+            return Optional.empty();
+        }
+        List<DomainProduct> list = products.stream().map(ProductMapper::toLigthDomain).toList();
+        return Optional.of(list);
+    }
+
+    @Override
+    public Optional<List<DomainProduct>> getAllProductsByTenant(String tenantCode) {
+        List<Product> products = this.productRepository.getAllProductOfTenantCode(tenantCode);
+        if (products.isEmpty()) {
+            return Optional.empty();
+        }
+        List<DomainProduct> list = products.stream().map(ProductMapper::toLigthDomain).toList();
+        return Optional.of(list);
+    }
+
+    @Override
+    public Set<String> getAllUnitOfMeasurement() {
+        List<UnitOfMeasure> all = this.unitOfMeasureRepository.findAll();
+        if (all.isEmpty()) {
+            return Collections.emptySet();
+        }
+        return all.stream().map(UnitOfMeasure::getName).collect(Collectors.toSet());
+    }
+
 
 }

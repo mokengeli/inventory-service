@@ -24,7 +24,7 @@ public class ArticleController {
     }
 
     // Créer un nouvel article pour un produit
-    @PreAuthorize("hasAuthority('EDIT_INVENTORY')")
+    @PreAuthorize("hasAnyAuthority('EDIT_INVENTORY','ADD_INVENTORY')")
     @PutMapping("/add")
     public ResponseEntity<DomainArticle> addArticle(@RequestBody ProductRequest productRequest) {
         try {
@@ -35,7 +35,7 @@ public class ArticleController {
             throw new ResponseStatusWrapperException(HttpStatus.BAD_REQUEST, e.getMessage(), e.getTechnicalId());
         }
     }
-    @PreAuthorize("hasAuthority('EDIT_INVENTORY')")
+    @PreAuthorize("hasAnyAuthority('EDIT_INVENTORY','REMOVE_INVENTORY')")
     @PutMapping("/remove")
     public List<DomainArticle> removeProduct(@RequestBody List<DomainActionArticle> removeProductRequests) {
         try {
