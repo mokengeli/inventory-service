@@ -7,10 +7,8 @@ import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.port.ArticlePort;
 import com.bacos.mokengeli.biloko.application.port.ProductPort;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLException;
 import java.util.*;
 
 @Slf4j
@@ -54,7 +52,8 @@ public class ProductService {
 
         List<Long> ids = Collections.singletonList(productId);
 
-        if (!this.productPort.isAllProductOfTenantCode(ids, tenantCode)) {
+        if (!this.userAppService.isAdminUser()
+                && !this.productPort.isAllProductOfTenantCode(ids, tenantCode)) {
             String errorId = UUID.randomUUID().toString();
             log.error("[{}]: User [{}] of tenant [{}] try to get product of tenant. Product id [{}] to the stock", errorId,
                     employeeNumber, connectedUser.getTenantCode(), productId);
@@ -100,14 +99,16 @@ public class ProductService {
         return this.productPort.isAllProductOfTenantCode(idsProduct, tenantCode);
     }
 
-    public List<DomainProduct> getAllProductsByOrganisation() {
-
-        if (this.userAppService.isAdminUser()) {
-            Optional<List<DomainProduct>> domainProducts = this.productPort.getAllProducts();
-            return domainProducts.orElse(Collections.emptyList());
-        }
+    public List<DomainProduct> getAllProductsByOrganisation(String tenantCode) throws ServiceException {
         ConnectedUser connectedUser = this.userAppService.getConnectedUser();
-        String tenantCode = connectedUser.getTenantCode();
+        String employeeNumber = connectedUser.getEmployeeNumber();
+        if (!this.userAppService.isAdminUser() && ! connectedUser.getTenantCode().equals(tenantCode)) {
+
+            String errorId = UUID.randomUUID().toString();
+            log.error("[{}]: User [{}] of tenant [{}] try to get all products of another tenant  [{}]", errorId,
+                    employeeNumber, connectedUser.getTenantCode(), tenantCode);
+            throw new ServiceException(errorId, "You can't get products item owning by another partener");
+        }
         Optional<List<DomainProduct>> domainProducts = this.productPort.getAllProductsByTenant(tenantCode);
         return domainProducts.orElse(Collections.emptyList());
     }

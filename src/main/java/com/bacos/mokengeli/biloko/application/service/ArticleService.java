@@ -132,11 +132,11 @@ public class ArticleService {
         List<Long> productIds = removeProductRequests.stream().map(DomainActionArticle::getProductId).toList();
         boolean allProductOfTenantCode = this.productPort.isAllProductOfTenantCode(productIds, tenantCode);
         String employeeNumber = connectedUser.getEmployeeNumber();
-        if (!allProductOfTenantCode) {
+        if (!this.userAppService.isAdminUser() && !allProductOfTenantCode) {
             String errorId = UUID.randomUUID().toString();
-            log.error("[{}]: User [{}] of tenant [{}] try to get product of another tenant. Product Ids [{}] to the stock", errorId,
+            log.error("[{}]: User [{}] of tenant [{}] try to remove product of another tenant. Product Ids [{}] to the stock", errorId,
                     employeeNumber, connectedUser.getTenantCode(), productIds);
-            throw new ServiceException(errorId, "You can't add item owning by another partener");
+            throw new ServiceException(errorId, "You can't remove item owning by another partener");
         }
         List<DomainArticle> domainArticles = new ArrayList<>();
         List<DomainStockMovement> domainStockMovements = new ArrayList<>();

@@ -66,9 +66,13 @@ public class ProductController {
 
     @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
     @GetMapping("/all")
-    public ResponseEntity<List<DomainProduct>> getAllProduct() {
-        List<DomainProduct> domainProducts = productService.getAllProductsByOrganisation();
-        return ResponseEntity.ok(domainProducts);
+    public ResponseEntity<List<DomainProduct>> getAllProduct(@RequestParam("code") String tenantCode) {
+        try {
+            List<DomainProduct> domainProducts = productService.getAllProductsByOrganisation(tenantCode);
+            return ResponseEntity.ok(domainProducts);
+        } catch (ServiceException e) {
+            throw new ResponseStatusWrapperException(HttpStatus.BAD_REQUEST, e.getMessage(), e.getTechnicalId());
+        }
     }
 
     @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
