@@ -1,12 +1,14 @@
 package com.bacos.mokengeli.biloko.infrastructure.adapter;
 
 import com.bacos.mokengeli.biloko.application.domain.DomainCategory;
+import com.bacos.mokengeli.biloko.application.domain.model.ConnectedUser;
 import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.port.CategoryPort;
 import com.bacos.mokengeli.biloko.infrastructure.mapper.CategoryMapper;
 import com.bacos.mokengeli.biloko.infrastructure.model.Category;
 import com.bacos.mokengeli.biloko.infrastructure.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -33,8 +35,10 @@ public class CategoryAdapter implements CategoryPort {
 
             Category save = this.categoryRepository.save(cat);
             return CategoryMapper.toDomain(save);
-        } catch (Exception e) {
-            throw new ServiceException(UUID.randomUUID().toString(), e.getMessage());
+        } catch (DataIntegrityViolationException e) {
+            String uuid = UUID.randomUUID().toString();
+
+            throw new ServiceException(uuid, "La category " + category.getName() + " existe deja.");
         }
     }
 

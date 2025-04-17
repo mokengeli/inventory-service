@@ -1,12 +1,16 @@
 package com.bacos.mokengeli.biloko.application.service;
 
+import com.bacos.mokengeli.biloko.application.domain.DomainArticle;
 import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
 import com.bacos.mokengeli.biloko.application.domain.model.ConnectedUser;
 import com.bacos.mokengeli.biloko.application.exception.ServiceException;
+import com.bacos.mokengeli.biloko.application.port.ArticlePort;
 import com.bacos.mokengeli.biloko.application.port.ProductPort;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.*;
 
 @Slf4j
@@ -15,11 +19,13 @@ public class ProductService {
 
     private final ProductPort productPort;
     private final UserAppService userAppService;
+    private final ArticlePort articlePort;
 
 
-    public ProductService(ProductPort productPort, UserAppService userAppService) {
+    public ProductService(ProductPort productPort, UserAppService userAppService, ArticlePort articlePort) {
         this.productPort = productPort;
         this.userAppService = userAppService;
+        this.articlePort = articlePort;
     }
 
     public DomainProduct createProduct(DomainProduct product) throws ServiceException {
@@ -37,7 +43,7 @@ public class ProductService {
             ConnectedUser connectedUser = this.userAppService.getConnectedUser();
             log.error("[{}]: User [{}]. {}", e.getTechnicalId(),
                     connectedUser.getEmployeeNumber(), e.getMessage());
-            throw new ServiceException(e.getTechnicalId(), "Technical Error");
+            throw new ServiceException(e.getTechnicalId(), e.getMessage());
         }
     }
 
@@ -62,7 +68,15 @@ public class ProductService {
             log.error("[{}]: User [{}]. {}", errorId, connectedUser.getEmployeeNumber(), errorMsg);
             throw new ServiceException(errorId, "Technical Error");
         }
-        return optProduct.get();
+
+        Optional<DomainArticle> optArticle = this.articlePort.findByProductId(productId);
+        DomainProduct domainProduct = optProduct.get();
+        if (optArticle.isEmpty()) {
+            return domainProduct;
+        }
+        DomainArticle domainArticle = optArticle.get();
+        domainProduct.setArticle(domainArticle);
+        return domainProduct;
     }
 
 
@@ -100,6 +114,8 @@ public class ProductService {
 
     public Set<String> getAllUnitOfMeasurement() {
 
-        return this.productPort.getAllUnitOfMeasurement() ;
+        return this.productPort.getAllUnitOfMeasurement();
     }
+
+
 }

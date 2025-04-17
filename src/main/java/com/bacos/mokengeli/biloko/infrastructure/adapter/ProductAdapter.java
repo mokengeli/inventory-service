@@ -1,6 +1,7 @@
 package com.bacos.mokengeli.biloko.infrastructure.adapter;
 
 import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
+import com.bacos.mokengeli.biloko.application.domain.model.ConnectedUser;
 import com.bacos.mokengeli.biloko.application.port.ProductPort;
 import com.bacos.mokengeli.biloko.infrastructure.mapper.ProductMapper;
 import com.bacos.mokengeli.biloko.infrastructure.model.Product;
@@ -8,6 +9,7 @@ import com.bacos.mokengeli.biloko.infrastructure.model.UnitOfMeasure;
 import com.bacos.mokengeli.biloko.infrastructure.repository.ProductRepository;
 import com.bacos.mokengeli.biloko.infrastructure.repository.UnitOfMeasureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 
@@ -42,8 +44,9 @@ public class ProductAdapter implements ProductPort {
         try {
             Product savedProduct = productRepository.save(product);
             return Optional.of(ProductMapper.toDomain(savedProduct));
-        } catch (Exception e) {
-            throw new ServiceException(UUID.randomUUID().toString(), e.getMessage());
+        } catch  (DataIntegrityViolationException e) {
+            String uuid = UUID.randomUUID().toString();
+            throw new ServiceException(uuid, "Le produit "+product.getName()+" du tenant "+product.getTenantCode()+" existe deja");
         }
     }
 

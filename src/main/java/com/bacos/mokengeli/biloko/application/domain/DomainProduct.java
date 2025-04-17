@@ -23,4 +23,5 @@ public class DomainProduct {
     private double volume;  // Volume unitaire du produit
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private DomainArticle article;
 }

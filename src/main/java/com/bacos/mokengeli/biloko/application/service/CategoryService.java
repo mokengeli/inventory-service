@@ -33,7 +33,7 @@ public class CategoryService {
             ConnectedUser connectedUser = this.userAppService.getConnectedUser();
             log.error("[{}]: User [{}]. {}", e.getTechnicalId(),
                     connectedUser.getEmployeeNumber(), e.getMessage());
-            throw new ServiceException(e.getTechnicalId(), "Technical Error");
+            throw new ServiceException(e.getTechnicalId(), e.getMessage());
         }
     }
 

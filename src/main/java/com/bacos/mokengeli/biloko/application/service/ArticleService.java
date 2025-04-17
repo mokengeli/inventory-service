@@ -36,7 +36,7 @@ public class ArticleService {
     }
 
     @Transactional
-    public DomainArticle addArticleToInventory(Long productId, int numberOfUnits) throws ServiceException {
+    public DomainArticle  addProductToInventory(Long productId, int numberOfUnits) throws ServiceException {
 
         ConnectedUser connectedUser = this.userAppService.getConnectedUser();
         String employeeNumber = connectedUser.getEmployeeNumber();
@@ -210,7 +210,94 @@ public class ArticleService {
                     connectedUser.getEmployeeNumber(), e.getMessage());
             throw new ServiceException(e.getTechnicalId(), "Technical Error Occured");
         }
+    }
 
 
+
+
+    @Transactional
+    public DomainArticle addArticleToInventory(Long productId, double quantite) throws ServiceException {
+
+        ConnectedUser connectedUser = this.userAppService.getConnectedUser();
+        String employeeNumber = connectedUser.getEmployeeNumber();
+        // Récupérer le produit via le port en filtrant par productId et tenantId
+        Optional<DomainProduct> optProduct = productPort.findById(productId);
+        if (optProduct.isEmpty()) {
+            String errorId = UUID.randomUUID().toString();
+            log.error("[{}]: User [{}] try to add article with non existing product id [{}]", errorId, employeeNumber, productId);
+            throw new ServiceException(errorId, "The product does not exist");
+        }
+
+        DomainProduct product = optProduct.get();
+        if (!this.userAppService.isAdminUser()
+                && !product.getTenantCode().equals(connectedUser.getTenantCode())) {
+            String errorId = UUID.randomUUID().toString();
+            log.error("[{}]: User [{}] of tenant [{}] try to add article of tenant [{}] to the stock", errorId, employeeNumber, connectedUser.getTenantCode(), product.getTenantCode());
+            throw new ServiceException(errorId, "You can't add item owning by another partener");
+        }
+
+        // Vérifier s'il existe déjà un article pour ce produit
+        Optional<DomainArticle> existingArticleOpt = articlePort.findByProductId(product.getId());
+        double oldQuantity = 0;
+        DomainArticle domainArticle;
+        if (existingArticleOpt.isPresent()) {
+            // Mettre à jour le volume total de l'article existant
+            DomainArticle existingArticle = existingArticleOpt.get();
+            double actualQuantity = existingArticle.getQuantity();
+            oldQuantity = actualQuantity;
+            if (actualQuantity < 0) {
+                actualQuantity = 0;
+            }
+            double updatedTotalVolume = actualQuantity + quantite;
+            domainArticle = DomainArticle.builder()
+                    .id(existingArticle.getId())
+                    .productId(existingArticle.getProductId())
+                    .quantity(updatedTotalVolume)
+                    .createdAt(existingArticle.getCreatedAt())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+        } else {
+            // Créer un nouvel article
+            domainArticle = DomainArticle.builder()
+                    .productId(product.getId())
+                    .quantity(quantite)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+        }
+        // Sauvegarder l'article via le port
+        Optional<DomainArticle> optionalDomainArticle = articlePort.save(domainArticle);
+        if (optionalDomainArticle.isEmpty()) {
+            String errorId = UUID.randomUUID().toString();
+            log.error("[{}]: User [{}]. Something went wrong while adding article of product code [{}] ", errorId, employeeNumber, productId);
+            throw new ServiceException(errorId, "Something went wrong while adding the product.");
+        }
+
+        domainArticle = optionalDomainArticle.get();
+
+        String observation = "Ajout de " + quantite +
+                " " + product.getUnitOfMeasure() + " pour le produit - " + product.getName();
+
+        // Créer un mouvement de stock de type ENTREE
+        DomainStockMovement stockMovement = DomainStockMovement.builder()
+                .articleId(domainArticle.getId())
+                .movementType(MovementTypeEnum.ADD_ARTICLE.name())
+                .employeeNumber(employeeNumber)
+                .oldQuantity(oldQuantity)
+                .quantityMoved(quantite)
+                .newQuantity(domainArticle.getQuantity())
+                .observation(observation)
+                .unitOfMeasure(product.getUnitOfMeasure())
+                .movementDate(LocalDateTime.now())
+                .build();
+
+
+        Optional<DomainStockMovement> logAudit = stockMovementPort.createAndLogAudit(stockMovement);
+        if (logAudit.isEmpty()) {
+            String errorId = UUID.randomUUID().toString();
+            log.error("[{}]: User [{}]. Error occured when registering the stock movement of product [{}]", errorId, employeeNumber, productId);
+            throw new ServiceException(errorId, "Technical error occured when registering the stock movement.");
+        }
+
+        return domainArticle;
     }
 }

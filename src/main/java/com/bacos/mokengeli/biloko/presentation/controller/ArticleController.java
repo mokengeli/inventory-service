@@ -26,15 +26,28 @@ public class ArticleController {
     // Créer un nouvel article pour un produit
     @PreAuthorize("hasAnyAuthority('EDIT_INVENTORY','ADD_INVENTORY')")
     @PutMapping("/add")
-    public ResponseEntity<DomainArticle> addArticle(@RequestBody ProductRequest productRequest) {
+    public ResponseEntity<DomainArticle> addArticle(@RequestBody DomainActionArticle domainActionArticle) {
         try {
-            DomainArticle createdArticle = articleService.addArticleToInventory(productRequest.getProductId(),
+            DomainArticle createdArticle = articleService.addArticleToInventory(domainActionArticle.getProductId(),
+                    domainActionArticle.getQuantity());
+            return ResponseEntity.ok(createdArticle);
+        } catch (ServiceException e) {
+            throw new ResponseStatusWrapperException(HttpStatus.BAD_REQUEST, e.getMessage(), e.getTechnicalId());
+        }
+    }
+
+    @PreAuthorize("hasAnyAuthority('EDIT_INVENTORY','ADD_INVENTORY')")
+    @PutMapping("/add/by-product")
+    public ResponseEntity<DomainArticle> addArticleByProductQuantity(@RequestBody ProductRequest productRequest) {
+        try {
+            DomainArticle createdArticle = articleService.addProductToInventory(productRequest.getProductId(),
                     productRequest.getNumberOfUnits());
             return ResponseEntity.ok(createdArticle);
         } catch (ServiceException e) {
             throw new ResponseStatusWrapperException(HttpStatus.BAD_REQUEST, e.getMessage(), e.getTechnicalId());
         }
     }
+
     @PreAuthorize("hasAnyAuthority('EDIT_INVENTORY','REMOVE_INVENTORY')")
     @PutMapping("/remove")
     public List<DomainArticle> removeProduct(@RequestBody List<DomainActionArticle> removeProductRequests) {
