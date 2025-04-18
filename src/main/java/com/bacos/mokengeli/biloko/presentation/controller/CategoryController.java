@@ -5,6 +5,9 @@ import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.service.CategoryService;
 import com.bacos.mokengeli.biloko.presentation.exception.ResponseStatusWrapperException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,8 +50,11 @@ public class CategoryController {
 
     @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
     @GetMapping("/all")
-    public ResponseEntity<List<DomainCategory>> getAllCategories() {
-        List<DomainCategory> domainCategories = categoryService.getAllCategories();
+    public ResponseEntity<Page<DomainCategory>> getAllCategories(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        Page<DomainCategory> domainCategories = categoryService.getAllCategories(page, size);
         return ResponseEntity.ok(domainCategories);
     }
+
 }

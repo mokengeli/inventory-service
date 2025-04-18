@@ -7,6 +7,7 @@ import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.port.CategoryPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -51,8 +52,8 @@ public class CategoryService {
                 });
     }
 
-    public List<DomainCategory> getAllCategories() {
-        return categoryPort.findAll().orElse(new ArrayList<>());
-
+    // Modified method signature and body:
+    public Page<DomainCategory> getAllCategories(int page, int size) {
+        return categoryPort.findAll(page, size);
     }
 }
