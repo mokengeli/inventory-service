@@ -5,6 +5,7 @@ import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
 import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.service.ProductService;
 import com.bacos.mokengeli.biloko.presentation.exception.ResponseStatusWrapperException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -70,13 +71,17 @@ public class ProductController {
 
     @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
     @GetMapping("/all")
-    public ResponseEntity<List<DomainProduct>> getAllProduct(@RequestParam("code") String tenantCode) {
+    public ResponseEntity<Page<DomainProduct>> getAllProduct(
+            @RequestParam("code") String tenantCode,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
         try {
-            List<DomainProduct> domainProducts = productService.getAllProductsByOrganisation(tenantCode);
+            Page<DomainProduct> domainProducts = productService.getAllProductsByOrganisation(tenantCode, page, size);
             return ResponseEntity.ok(domainProducts);
         } catch (ServiceException e) {
             throw new ResponseStatusWrapperException(HttpStatus.BAD_REQUEST, e.getMessage(), e.getTechnicalId());
         }
+
     }
 
     @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")

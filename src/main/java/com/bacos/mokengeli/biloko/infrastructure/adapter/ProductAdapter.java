@@ -10,6 +10,10 @@ import com.bacos.mokengeli.biloko.infrastructure.repository.ProductRepository;
 import com.bacos.mokengeli.biloko.infrastructure.repository.UnitOfMeasureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 
@@ -89,14 +93,12 @@ public class ProductAdapter implements ProductPort {
         return Optional.of(list);
     }
 
+    // Méthode mise à jour :
     @Override
-    public Optional<List<DomainProduct>> getAllProductsByTenant(String tenantCode) {
-        List<Product> products = this.productRepository.getAllProductOfTenantCode(tenantCode);
-        if (products.isEmpty()) {
-            return Optional.empty();
-        }
-        List<DomainProduct> list = products.stream().map(ProductMapper::toLigthDomain).toList();
-        return Optional.of(list);
+    public Page<DomainProduct> getAllProductsByTenant(String tenantCode, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return productRepository.getAllProductOfTenantCode(tenantCode, pageable)
+                .map(ProductMapper::toLigthDomain);
     }
 
     @Override

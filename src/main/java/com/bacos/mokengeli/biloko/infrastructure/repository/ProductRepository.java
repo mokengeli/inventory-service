@@ -1,6 +1,8 @@
 package com.bacos.mokengeli.biloko.infrastructure.repository;
 
 import com.bacos.mokengeli.biloko.infrastructure.model.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,5 +25,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<List<Product>> findByIds(@Param("productIds") List<Long> productIds);
 
     @Query("SELECT p FROM Product p WHERE p.tenantCode = :tenantCode")
-    List<Product> getAllProductOfTenantCode(String tenantCode);
+    Page<Product> getAllProductOfTenantCode(@Param("tenantCode") String tenantCode, Pageable pageable);
+
 }

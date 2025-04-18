@@ -7,6 +7,7 @@ import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.port.ArticlePort;
 import com.bacos.mokengeli.biloko.application.port.ProductPort;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -109,18 +110,16 @@ public class ProductService {
         return this.productPort.isAllProductOfTenantCode(idsProduct, tenantCode);
     }
 
-    public List<DomainProduct> getAllProductsByOrganisation(String tenantCode) throws ServiceException {
+    public Page<DomainProduct> getAllProductsByOrganisation(String tenantCode, int page, int size) throws ServiceException {
         ConnectedUser connectedUser = this.userAppService.getConnectedUser();
         String employeeNumber = connectedUser.getEmployeeNumber();
-        if (!this.userAppService.isAdminUser() && ! connectedUser.getTenantCode().equals(tenantCode)) {
-
+        if (!this.userAppService.isAdminUser() && !connectedUser.getTenantCode().equals(tenantCode)) {
             String errorId = UUID.randomUUID().toString();
-            log.error("[{}]: User [{}] of tenant [{}] try to get all products of another tenant  [{}]", errorId,
+            log.error("[{}]: User [{}] of tenant [{}] try to get all products of another tenant [{}]", errorId,
                     employeeNumber, connectedUser.getTenantCode(), tenantCode);
-            throw new ServiceException(errorId, "You can't get products item owning by another partener");
+            throw new ServiceException(errorId, "You can't get products item owning by another partner");
         }
-        Optional<List<DomainProduct>> domainProducts = this.productPort.getAllProductsByTenant(tenantCode);
-        return domainProducts.orElse(Collections.emptyList());
+        return productPort.getAllProductsByTenant(tenantCode, page, size);
     }
 
     public Set<String> getAllUnitOfMeasurement() {

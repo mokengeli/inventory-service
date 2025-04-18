@@ -2,6 +2,7 @@ package com.bacos.mokengeli.biloko.application.port;
 
 import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
 import com.bacos.mokengeli.biloko.application.exception.ServiceException;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +22,7 @@ public interface ProductPort {
 
     Optional<List<DomainProduct>> getAllProducts();
 
-    Optional<List<DomainProduct>> getAllProductsByTenant(String tenantCode);
+    Page<DomainProduct> getAllProductsByTenant(String tenantCode, int page, int size);
 
     Set<String> getAllUnitOfMeasurement();
 }
