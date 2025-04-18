@@ -93,9 +93,19 @@ public class ProductService {
         return products.orElseGet(ArrayList::new);
     }
 
-    public boolean isProductExistAndOfTheSomeOrganisation(List<Long> idsProduct) {
+    public boolean isProductExistAndOfTheSomeOrganisation(String tenantCode, List<Long> idsProduct) throws ServiceException {
         ConnectedUser connectedUser = this.userAppService.getConnectedUser();
-        String tenantCode = connectedUser.getTenantCode();
+        String tenantCodeUser = connectedUser.getTenantCode();
+
+
+        if (!this.userAppService.isAdminUser() && tenantCodeUser.equals(tenantCode)) {
+            String employeeNumber = connectedUser.getEmployeeNumber();
+            String errorId = UUID.randomUUID().toString();
+            log.error("[{}]: User [{}] of tenant [{}] try to check products of another tenant  [{}]", errorId,
+                    employeeNumber, connectedUser.getTenantCode(), tenantCode);
+            throw new ServiceException(errorId, "You can't get products item owning by another partener");
+
+        }
         return this.productPort.isAllProductOfTenantCode(idsProduct, tenantCode);
     }
 

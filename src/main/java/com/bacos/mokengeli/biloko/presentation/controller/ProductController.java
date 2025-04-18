@@ -59,9 +59,13 @@ public class ProductController {
     }
 
     @GetMapping("/exist-in-orga")
-    public boolean isProductExistAndOfTheSomeOrganisation(@RequestParam("ids") List<Long> idsProduct) {
-
-        return productService.isProductExistAndOfTheSomeOrganisation(idsProduct);
+    public boolean isProductExistAndOfTheSomeOrganisation(@RequestParam("tenant") String tenantCode,
+                                                          @RequestParam("ids") List<Long> idsProduct) {
+        try {
+            return productService.isProductExistAndOfTheSomeOrganisation(tenantCode, idsProduct);
+        } catch (ServiceException e) {
+            throw new ResponseStatusWrapperException(HttpStatus.BAD_REQUEST, e.getMessage(), e.getTechnicalId());
+        }
     }
 
     @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
