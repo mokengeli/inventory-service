@@ -26,16 +26,17 @@ public class StockMovementAdapter implements StockMovementPort {
 
     @Override
     public Optional<DomainStockMovement> createAndLogAudit(DomainStockMovement domainStockMovement) {
-        Long articleId = domainStockMovement.getArticleId();
-        Optional<Article> optArticle = this.articleRepository.findById(articleId);
-        if (optArticle.isEmpty()) {
-            return Optional.empty();
-        }
-        Article article = optArticle.get();
         StockMovement stockMovement = StockMovementMapper.toEntity(domainStockMovement);
-        stockMovement.setArticle(article);
+        Long articleId = domainStockMovement.getArticleId();
+        if (articleId != null) {
+            Optional<Article> optArticle = this.articleRepository.findById(articleId);
+            if (optArticle.isEmpty()) {
+                return Optional.empty();
+            }
+            Article article = optArticle.get();
+            stockMovement.setArticle(article);
+        }
         stockMovement = stockMovementRepository.save(stockMovement);
-
         return Optional.of(StockMovementMapper.toDomain(stockMovement));  // Returning saved entity mapped to DomainStockMovement
     }
 

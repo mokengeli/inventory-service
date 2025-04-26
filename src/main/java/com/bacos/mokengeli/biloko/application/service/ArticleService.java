@@ -36,7 +36,7 @@ public class ArticleService {
     }
 
     @Transactional
-    public DomainArticle  addProductToInventory(Long productId, int numberOfUnits) throws ServiceException {
+    public DomainArticle addProductToInventory(Long productId, int numberOfUnits) throws ServiceException {
 
         ConnectedUser connectedUser = this.userAppService.getConnectedUser();
         String employeeNumber = connectedUser.getEmployeeNumber();
@@ -150,33 +150,46 @@ public class ArticleService {
             }
 
             Optional<DomainArticle> existingArticleOpt = articlePort.findByProductId(productId);
+            DomainArticle existingArticle;
+            boolean noArticleFound = false;
             if (existingArticleOpt.isEmpty()) {
+                noArticleFound = true;
                 String errorId = UUID.randomUUID().toString();
-                log.error("[{}]: User [{}]. No article found for product id [{}]", errorId, employeeNumber, productId);
-                throw new ServiceException(errorId, "No article found for some product id = " + productId);
+                log.warn("[{}]: User [{}]. No article ever added for product id [{}]", errorId, employeeNumber, productId);
+                existingArticle = DomainArticle
+                        .builder()
+                        .quantity(0)
+                        .createdAt(LocalDateTime.now())
+                        .build();
+            } else {
+                existingArticle = existingArticleOpt.get();
             }
-            DomainArticle existingArticle = existingArticleOpt.get();
+
             double oldQuantity = existingArticle.getQuantity();
 
 
             double updatedTotalVolume = oldQuantity - domainActionArticle.quantity;
             String observation = "";
             DomainProduct domainProduct = optProduct.get();
-            if (updatedTotalVolume < 0) {
+            if (noArticleFound) {
+                observation = "No Article ever added for the product. ProductId = " + domainProduct.getId();
+            } else if (updatedTotalVolume < 0) {
                 String warningId = UUID.randomUUID().toString();
                 log.warn("[{}]: User [{}].  Article [{}] has negative quantity. The stock must be adjusted", warningId,
                         employeeNumber, existingArticle.getId());
-                observation = "Le stock est vide après le retrait de " +
+                observation = "The inventory is empty after the removal of " +
                         domainActionArticle.getQuantity() +
-                        " " + domainProduct.getUnitOfMeasure() + " pour le produit - " + domainProduct.getName();
+                        " " + domainProduct.getUnitOfMeasure() + " for the product - " + domainProduct.getName();
                 updatedTotalVolume = 0;
             } else {
-                observation = "Retrait de " + domainActionArticle.getQuantity() +
-                        " " + domainProduct.getUnitOfMeasure() + " pour le produit - " + domainProduct.getName();
+                observation = "Removal of " + domainActionArticle.getQuantity() +
+                        " " + domainProduct.getUnitOfMeasure() + " for the product - " + domainProduct.getName();
             }
             existingArticle.setUpdatedAt(LocalDateTime.now());
             existingArticle.setQuantity(updatedTotalVolume);
-            domainArticles.add(existingArticle);
+            if (!noArticleFound) {
+                domainArticles.add(existingArticle);
+            }
 
 
             DomainStockMovement stockMovement = DomainStockMovement.builder()
@@ -194,16 +207,21 @@ public class ArticleService {
             domainStockMovements.add(stockMovement);
         }
         try {
-            // save new quantity of All articles
-            Optional<List<DomainArticle>> domainArticles1 = this.articlePort.saveAll(domainArticles);
-            if (domainArticles1.isEmpty()) {
-                String errorId = UUID.randomUUID().toString();
-                log.error("[{}]: User [{}]. Unexpected Error Occured while saving all articles", errorId, employeeNumber);
-                throw new ServiceException(errorId, "Unexpected Error Occured while saving all articles");
+
+            if (!domainArticles.isEmpty()) {
+                // save new quantity of All articles
+                Optional<List<DomainArticle>> domainArticles1 = this.articlePort.saveAll(domainArticles);
+                if (domainArticles1.isEmpty()) {
+                    String errorId = UUID.randomUUID().toString();
+                    log.error("[{}]: User [{}]. Unexpected Error Occured while saving all articles", errorId, employeeNumber);
+                    throw new ServiceException(errorId, "Unexpected Error Occured while saving all articles");
+                }
+                domainArticles = domainArticles1.get();
             }
+
             // audit the action
             this.stockMovementPort.createAndLogAuditList(domainStockMovements);
-            return domainArticles1.get();
+            return domainArticles;
         } catch (ServiceException e) {
 
             log.error("[{}]: User [{}]. {}", e.getTechnicalId(),
@@ -211,8 +229,6 @@ public class ArticleService {
             throw new ServiceException(e.getTechnicalId(), "Technical Error Occured");
         }
     }
-
-
 
 
     @Transactional

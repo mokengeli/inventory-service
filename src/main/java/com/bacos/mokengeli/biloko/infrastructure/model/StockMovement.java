@@ -25,7 +25,7 @@ public class StockMovement {
     private String observation;
 
     @ManyToOne
-    @JoinColumn(name = "article_id", nullable = false)
+    @JoinColumn(name = "article_id")
     private Article article;  // Article concerné par le mouvement de stock
 
     @Column(name = "movement_type", nullable = false)

@@ -10,7 +10,8 @@ public class StockMovementMapper {
     public static DomainStockMovement toDomain(StockMovement stockMovement) {
         return DomainStockMovement.builder()
                 .id(stockMovement.getId())
-                .articleId(stockMovement.getArticle().getId())
+                .articleId(stockMovement.getArticle() != null ? stockMovement.getArticle().getId()
+                        : null)
                 .movementType(stockMovement.getMovementType())
                 .quantityMoved(stockMovement.getQuantityMoved())
                 .movementDate(stockMovement.getMovementDate())

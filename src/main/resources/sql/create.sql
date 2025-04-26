@@ -49,7 +49,7 @@ CREATE TABLE inventory_service_schema.stock_movements (
                                                           id SERIAL PRIMARY KEY,
                                                           employee_number VARCHAR(100) NOT NULL,  -- Numéro de l'employé, récupéré via user-service
                                                           observation TEXT,
-                                                          article_id INT NOT NULL REFERENCES inventory_service_schema.articles(id),
+                                                          article_id INT REFERENCES inventory_service_schema.articles(id),
                                                           movement_type VARCHAR(50) NOT NULL,   -- ENTREE ou SORTIE
                                                           old_quantity DOUBLE PRECISION NOT NULL,  --
                                                           quantity_moved DOUBLE PRECISION NOT NULL,  --
