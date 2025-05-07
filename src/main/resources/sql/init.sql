@@ -1,15 +1,41 @@
-INSERT INTO inventory_service_schema.unit_of_measure (name)
-VALUES
-    ('LITRE'),
-    ('KILOGRAMME'),
-    ('UNITE');
+SET search_path TO inventory_schema;
+    /* ====== Unités de mesure ====== */
+INSERT INTO units_of_measure (name) VALUES
+                                                                ('Pièce / Unité'),
+                                                                ('Litre'),
+                                                                ('Centilitre'),
+                                                                ('Millilitre'),
+                                                                ('Kilogramme'),
+                                                                ('Gramme'),
+                                                                ('Portion'),
+                                                                ('Douzaine'),
+                                                                ('Pack / Colis'),
+                                                                ('Carton'),
+                                                                ('Sac'),
+                                                                ('Bouteille');
 
-INSERT INTO inventory_service_schema.categories (id,  name, created_at)
-VALUES (1, 'LIQUIDE', '2024-09-18');
-
-
-
-INSERT INTO inventory_service_schema.products
-(name, code, tenant_code, category_id, unit_of_measure_id, volume, created_at, updated_at)
-VALUES ('Volvic Mineral Water', 'P1','T1', 1, 1, 1.5, NOW(), NOW()),
-       ('Coca-Cola', 'P2', 'T1', 1, 1, 1.0, NOW(), NOW());
+INSERT INTO categories (name, description) VALUES
+                                                                        ('Boissons non alcoolisées',  'Eaux, sodas, jus et autres boissons sans alcool'),
+                                                                        ('Boissons alcoolisées',      'Bières, vins, spiritueux et cocktails prêts à servir'),
+                                                                        ('Viandes',                   'Bœuf, porc, agneau, charcuterie et autres viandes rouges'),
+                                                                        ('Volailles',                 'Poulet, dinde, canard et dérivés'),
+                                                                        ('Poissons',                  'Poissons frais ou transformés : tilapia, saumon, capitaine…'),
+                                                                        ('Fruits de mer',             'Crevettes, crabes, calamars, moules, huîtres'),
+                                                                        ('Céréales & Grains',         'Riz, maïs, couscous, quinoa et autres céréales sèches'),
+                                                                        ('Féculents & Tubercules',    'Pomme de terre, manioc, igname, patate douce'),
+                                                                        ('Légumineuses',              'Haricots, pois chiches, lentilles et grains secs'),
+                                                                        ('Légumes frais',             'Tomates, oignons, épinards, carottes, etc.'),
+                                                                        ('Fruits frais',              'Mangues, bananes, ananas, agrumes, fruits saisonniers'),
+                                                                        ('Produits laitiers',         'Lait, fromages, yaourts, beurre et dérivés'),
+                                                                        ('Œufs',                      'Œufs coquille, œufs liquides, ovoproduits'),
+                                                                        ('Épices & Condiments',       'Sel, poivre, bouillons, herbes, sauces concentrées'),
+                                                                        ('Huiles & Graisses',         'Huiles végétales, beurre clarifié, margarine'),
+                                                                        ('Sauces & Pâtes aromatiques','Ketchup, mayonnaise, moutarde, pâte d’arachide, curry'),
+                                                                        ('Boulangerie & Pâtisserie',  'Pain, viennoiseries, farine, sucre, levure'),
+                                                                        ('Surgelés',                  'Produits conservés à –18 °C : frites, légumes IQF, glaces'),
+                                                                        ('Fruits secs & Noix',        'Raisins secs, dattes, arachides, noix de cajou'),
+                                                                        ('Snacks & Confiseries',      'Chips, biscuits, barres chocolatées, bonbons'),
+                                                                        ('Produits d’entretien',      'Détergents, savons, désinfectants, éponges'),
+                                                                        ('Emballages & Consommables', 'Barquettes, gobelets, sacs, film alimentaire'),
+                                                                        ('Gaz & Énergie',             'Bonbonnes de gaz, charbon, briquettes'),
+                                                                        ('Divers / Autres',           'Articles ne rentrant dans aucune catégorie principale');

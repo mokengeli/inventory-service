@@ -1,60 +1,100 @@
--- Création du schéma
-CREATE SCHEMA inventory_service_schema;
+/* =============================================================
+   SCHÉMA
+   =============================================================*/
+CREATE SCHEMA IF NOT EXISTS inventory_schema;
+SET search_path TO inventory_schema;
 
-CREATE TABLE inventory_service_schema.unit_of_measure (
-                                                          id SERIAL PRIMARY KEY,
-                                                          name VARCHAR(50) NOT NULL UNIQUE  -- Ex: litre, kg, unit
+/* =============================================================
+   TABLES DE RÉFÉRENCE (lookup)
+   =============================================================*/
+CREATE TABLE units_of_measure (
+                                 id          BIGSERIAL       PRIMARY KEY,
+                                 name        TEXT            NOT NULL UNIQUE,
+                                 created_at  TIMESTAMP       DEFAULT now(),
+                                 updated_at  TIMESTAMP
 );
 
--- Table des catégories (categories)
-CREATE TABLE inventory_service_schema.categories (
-                                                     id SERIAL PRIMARY KEY,
-                                                     name VARCHAR(100) NOT NULL UNIQUE,
-                                                     description TEXT,
-                                                     created_at TIMESTAMP NOT NULL,
-                                                     updated_at TIMESTAMP
-);
--- Table des produits (products)
-CREATE TABLE inventory_service_schema.products (
-                                                   id SERIAL PRIMARY KEY,
-                                                   code VARCHAR(255) NOT NULL UNIQUE,
-                                                   name VARCHAR(255) NOT NULL,
-                                                   description TEXT,
-                                                   tenant_code VARCHAR(255) NOT NULL,
-                                                   category_id INT NOT NULL,
-                                                   unit_of_measure_id INT NOT NULL,  -- Foreign key to the unit_of_measure table
-                                                   volume DOUBLE PRECISION NOT NULL, -- Volume per unit (e.g., 1.5 L per bottle)
-                                                   created_at TIMESTAMP NOT NULL,
-                                                   updated_at TIMESTAMP,
-                                                   CONSTRAINT unique_product_name_per_tenant UNIQUE (name, tenant_code),
-                                                   FOREIGN KEY (category_id) REFERENCES inventory_service_schema.categories (id),
-                                                   FOREIGN KEY (unit_of_measure_id) REFERENCES inventory_service_schema.unit_of_measure (id)
+CREATE TABLE categories (
+                            id          BIGSERIAL       PRIMARY KEY,
+                            name        TEXT            NOT NULL UNIQUE,
+                            description TEXT,
+                            created_at  TIMESTAMP       DEFAULT now(),
+                            updated_at  TIMESTAMP
 );
 
-
-
--- Table des articles (articles)
-CREATE TABLE inventory_service_schema.articles (
-                                                   id SERIAL PRIMARY KEY,
-                                                   product_id INT NOT NULL REFERENCES inventory_service_schema.products(id),
-                                                   quantity DOUBLE PRECISION NOT NULL,  -- Volume total (ex: 1,5 * 5 = 7,5 L)
-                                                   created_at TIMESTAMP NOT NULL,
-                                                   updated_at TIMESTAMP
+/* =============================================================
+   PRODUITS  (multitenant)
+   =============================================================*/
+CREATE TABLE products (
+                          id BIGSERIAL PRIMARY KEY,
+                          code VARCHAR(255) NOT NULL UNIQUE,
+                          name VARCHAR(255) NOT NULL,
+                          description TEXT,
+                          tenant_code VARCHAR(255) NOT NULL,
+                          category_id BIGINT NOT NULL,
+                          unit_of_measure_id INT NOT NULL,  -- Foreign key to the unit_of_measure table
+                          volume  NUMERIC(14,3) NOT NULL, -- Volume per unit (e.g., 1.5 L per bottle)
+                          created_at TIMESTAMP NOT NULL,
+                          updated_at TIMESTAMP,
+                          CONSTRAINT unique_product_name_per_tenant UNIQUE (name, tenant_code)
 );
 
+/* Index couvrant la pagination par tenant */
+CREATE INDEX idx_products_tenant_id
+    ON products (tenant_code, id);
 
+/* Recherche rapide par code */
+CREATE UNIQUE INDEX idx_products_code
+    ON products (code);
 
--- Table des mouvements de stock (stock_movements)
-CREATE TABLE inventory_service_schema.stock_movements (
-                                                          id SERIAL PRIMARY KEY,
-                                                          employee_number VARCHAR(100) NOT NULL,  -- Numéro de l'employé, récupéré via user-service
-                                                          observation TEXT,
-                                                          article_id INT REFERENCES inventory_service_schema.articles(id),
-                                                          movement_type VARCHAR(50) NOT NULL,   -- ENTREE ou SORTIE
-                                                          old_quantity DOUBLE PRECISION NOT NULL,  --
-                                                          quantity_moved DOUBLE PRECISION NOT NULL,  --
-                                                          new_quantity DOUBLE PRECISION NOT NULL,  --
-                                                          unit_of_measure VARCHAR(50) NOT NULL,
-                                                          movement_date TIMESTAMP NOT NULL,
-                                                          updated_at TIMESTAMP
+/* =============================================================
+   ARTICLES  (1 : 1 avec product)
+   =============================================================*/
+CREATE TABLE articles (
+                          id          BIGSERIAL   PRIMARY KEY,
+                          product_id  BIGINT      NOT NULL UNIQUE
+                              REFERENCES products(id)
+                                  ON UPDATE CASCADE ON DELETE CASCADE,
+                          quantity   NUMERIC(14,3)  NOT NULL DEFAULT 0,
+                          created_at  TIMESTAMP   DEFAULT now(),
+                          updated_at  TIMESTAMP
 );
+
+/* Accès le plus fréquent : findByProductId */
+CREATE UNIQUE INDEX idx_articles_product
+    ON articles (product_id);
+
+/* =============================================================
+   MOUVEMENTS DE STOCK  (forte volumétrie)
+   =============================================================*/
+CREATE TABLE stock_movements (
+                                 id BIGSERIAL PRIMARY KEY,
+                                 employee_number VARCHAR(100) NOT NULL,  -- Numéro de l'employé, récupéré via user-service
+                                 observation TEXT,
+                                 article_id BIGINT REFERENCES articles(id),
+                                 movement_type VARCHAR(50) NOT NULL,   -- ENTREE ou SORTIE
+                                 old_quantity NUMERIC(14,3) NOT NULL,  --
+                                 quantity_moved NUMERIC(14,3) NOT NULL,  --
+                                 new_quantity NUMERIC(14,3) NOT NULL,  --
+                                 unit_of_measure VARCHAR(50) NOT NULL,
+                                 movement_date TIMESTAMP NOT NULL,
+                                 updated_at TIMESTAMP
+);
+
+/* Historique complet / dernier mouvement d’un article */
+CREATE INDEX idx_mov_article_date
+    ON stock_movements (article_id, movement_date DESC);
+
+/* Rapports périodiques (plages de dates) */
+CREATE INDEX idx_mov_date
+    ON stock_movements (movement_date);
+
+/* (Facultatif) index partiels pour ENTREE / SORTIE
+CREATE INDEX idx_mov_in_dates
+          ON stock_movements (movement_date)
+          WHERE movement_type = 'ENTREE';
+
+CREATE INDEX idx_mov_out_dates
+          ON stock_movements (movement_date)
+          WHERE movement_type = 'SORTIE';
+*/

@@ -10,7 +10,5 @@ import java.util.Optional;
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
-    List<Article> findAllByProductId(Long productId);
-
     Optional<Article> findByProductId(Long productId);
 }
