@@ -84,7 +84,8 @@ public class ProductService {
         ConnectedUser connectedUser = this.userAppService.getConnectedUser();
         String tenantCode = connectedUser.getTenantCode();
 
-        if (!this.productPort.isAllProductOfTenantCode(productIds, tenantCode)) {
+        if (!this.userAppService.isAdminUser() &&
+                !this.productPort.isAllProductOfTenantCode(productIds, tenantCode)) {
             String errorId = UUID.randomUUID().toString();
             log.error("[{}]: User [{}] of tenant [{}] try to get product of another tenant. Product Ids [{}] to the stock", errorId,
                     connectedUser.getEmployeeNumber(), connectedUser.getTenantCode(), productIds);
