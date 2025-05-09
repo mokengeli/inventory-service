@@ -100,7 +100,7 @@ public class ProductService {
         String tenantCodeUser = connectedUser.getTenantCode();
 
 
-        if (!this.userAppService.isAdminUser() && tenantCodeUser.equals(tenantCode)) {
+        if (!this.userAppService.isAdminUser() && !tenantCodeUser.equals(tenantCode)) {
             String employeeNumber = connectedUser.getEmployeeNumber();
             String errorId = UUID.randomUUID().toString();
             log.error("[{}]: User [{}] of tenant [{}] try to check products of another tenant  [{}]", errorId,
