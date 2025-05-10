@@ -10,16 +10,16 @@ SET search_path TO inventory_schema;
 CREATE TABLE units_of_measure (
                                  id          BIGSERIAL       PRIMARY KEY,
                                  name        TEXT            NOT NULL UNIQUE,
-                                 created_at  TIMESTAMP       DEFAULT now(),
-                                 updated_at  TIMESTAMP
+                                 created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+                                 updated_at  TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE categories (
                             id          BIGSERIAL       PRIMARY KEY,
                             name        TEXT            NOT NULL UNIQUE,
                             description TEXT,
-                            created_at  TIMESTAMP       DEFAULT now(),
-                            updated_at  TIMESTAMP
+                            created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+                            updated_at  TIMESTAMP WITH TIME ZONE
 );
 
 /* =============================================================
@@ -34,8 +34,8 @@ CREATE TABLE products (
                           category_id BIGINT NOT NULL,
                           unit_of_measure_id INT NOT NULL,  -- Foreign key to the unit_of_measure table
                           volume  NUMERIC(14,3) NOT NULL, -- Volume per unit (e.g., 1.5 L per bottle)
-                          created_at TIMESTAMP NOT NULL,
-                          updated_at TIMESTAMP,
+                          created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+                          updated_at TIMESTAMP WITH TIME ZONE,
                           CONSTRAINT unique_product_name_per_tenant UNIQUE (name, tenant_code)
 );
 
@@ -56,8 +56,8 @@ CREATE TABLE articles (
                               REFERENCES products(id)
                                   ON UPDATE CASCADE ON DELETE CASCADE,
                           quantity   NUMERIC(14,3)  NOT NULL DEFAULT 0,
-                          created_at  TIMESTAMP   DEFAULT now(),
-                          updated_at  TIMESTAMP
+                          created_at  TIMESTAMP WITH TIME ZONE  NOT NULL DEFAULT now(),
+                          updated_at  TIMESTAMP WITH TIME ZONE
 );
 
 /* Accès le plus fréquent : findByProductId */
@@ -77,8 +77,8 @@ CREATE TABLE stock_movements (
                                  quantity_moved NUMERIC(14,3) NOT NULL,  --
                                  new_quantity NUMERIC(14,3) NOT NULL,  --
                                  unit_of_measure VARCHAR(50) NOT NULL,
-                                 movement_date TIMESTAMP NOT NULL,
-                                 updated_at TIMESTAMP
+                                 movement_date TIMESTAMP WITH TIME ZONE NOT NULL,
+                                 updated_at TIMESTAMP WITH TIME ZONE
 );
 
 /* Historique complet / dernier mouvement d’un article */

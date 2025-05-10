@@ -29,9 +29,20 @@ public class ProductService {
 
     public DomainProduct createProduct(DomainProduct product) throws ServiceException {
         try {
+            ConnectedUser connectedUser = this.userAppService.getConnectedUser();
+            String tenantCode = product.getTenantCode();
+            if (!this.userAppService.isAdminUser() &&
+                    !connectedUser.getTenantCode().equals(tenantCode)) {
+                String uuid = UUID.randomUUID().toString();
+                log.error("[{}]: User [{}] Tenant [{}] try to create product {} to another tenant: {}", uuid,
+                        connectedUser.getEmployeeNumber(), connectedUser.getTenantCode(), product.getName(), tenantCode);
+
+                throw new ServiceException(uuid, "You don't have permission to perfom this action");
+            }
+
             Optional<DomainProduct> domainProduct = productPort.addProduct(product);
+
             if (domainProduct.isEmpty()) {
-                ConnectedUser connectedUser = this.userAppService.getConnectedUser();
                 String uuid = UUID.randomUUID().toString();
                 log.error("[{}]: User [{}]. {}", uuid,
                         connectedUser.getEmployeeNumber(), "Aucun produit créé");
