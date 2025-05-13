@@ -1,0 +1,38 @@
+server:
+  port: ${SERVER_PORT:0}
+
+spring:
+  application:
+    name: inventory-service
+  datasource:
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      schema: ${POSTGRES_SCHEMA:inventory_schema}
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: ${TIME_ZONE:GMT+01:00}
+    show-sql: ${SHOW_SQL:false}
+  jackson:
+    time-zone: ${TIME_ZONE:GMT+01:00}
+
+security:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS}
+  jwt:
+    secret: ${JWT_SECRET}
+  is-ssl: ${IS_SSL}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.uuid}
