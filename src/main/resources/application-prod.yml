@@ -16,7 +16,6 @@ spring:
       hibernate:
         jdbc:
           time_zone: ${TIME_ZONE:GMT+01:00}
-    show-sql: ${SHOW_SQL:false}
   jackson:
     time-zone: ${TIME_ZONE:GMT+01:00}
 
@@ -36,3 +35,8 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.uuid}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
