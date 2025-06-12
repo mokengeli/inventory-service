@@ -1,11 +1,14 @@
 package com.bacos.mokengeli.biloko.infrastructure.adapter;
 
+import com.bacos.mokengeli.biloko.application.domain.DomainArticle;
 import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
 import com.bacos.mokengeli.biloko.application.domain.model.ConnectedUser;
 import com.bacos.mokengeli.biloko.application.port.ProductPort;
 import com.bacos.mokengeli.biloko.infrastructure.mapper.ProductMapper;
+import com.bacos.mokengeli.biloko.infrastructure.model.Article;
 import com.bacos.mokengeli.biloko.infrastructure.model.Product;
 import com.bacos.mokengeli.biloko.infrastructure.model.UnitOfMeasure;
+import com.bacos.mokengeli.biloko.infrastructure.repository.ArticleRepository;
 import com.bacos.mokengeli.biloko.infrastructure.repository.ProductRepository;
 import com.bacos.mokengeli.biloko.infrastructure.repository.UnitOfMeasureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +28,13 @@ import java.util.stream.Collectors;
 public class ProductAdapter implements ProductPort {
 
     private final ProductRepository productRepository;
+    private final ArticleRepository articleRepository;
     private final UnitOfMeasureRepository unitOfMeasureRepository;
 
     @Autowired
-    public ProductAdapter(ProductRepository productRepository, UnitOfMeasureRepository unitOfMeasureRepository) {
+    public ProductAdapter(ProductRepository productRepository, ArticleRepository articleRepository, UnitOfMeasureRepository unitOfMeasureRepository) {
         this.productRepository = productRepository;
+        this.articleRepository = articleRepository;
         this.unitOfMeasureRepository = unitOfMeasureRepository;
     }
 
@@ -48,9 +53,9 @@ public class ProductAdapter implements ProductPort {
         try {
             Product savedProduct = productRepository.save(product);
             return Optional.of(ProductMapper.toDomain(savedProduct));
-        } catch  (DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException e) {
             String uuid = UUID.randomUUID().toString();
-            throw new ServiceException(uuid, "Le produit "+product.getName()+" du tenant "+product.getTenantCode()+" existe deja");
+            throw new ServiceException(uuid, "Le produit " + product.getName() + " du tenant " + product.getTenantCode() + " existe deja");
         }
     }
 
@@ -97,8 +102,21 @@ public class ProductAdapter implements ProductPort {
     @Override
     public Page<DomainProduct> getAllProductsByTenant(String tenantCode, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return productRepository.getAllProductOfTenantCode(tenantCode, pageable)
-                .map(ProductMapper::toLigthDomain);
+        return  productRepository.getAllProductOfTenantCode(tenantCode, pageable)
+                .map(product -> {
+                    DomainProduct ligthDomain = ProductMapper.toLigthDomain(product);
+                    Long id = product.getId();
+                    Optional<Article> articleOpt = this.articleRepository.findByProductId(id);
+                    if (articleOpt.isPresent()) {
+                        Article article = articleOpt.get();
+                        DomainArticle domainArticle = DomainArticle.builder()
+                                .id(article.getId())
+                                .quantity(article.getQuantity())
+                                .build();
+                        ligthDomain.setArticle(domainArticle);
+                    }
+                    return ligthDomain;
+                });
     }
 
     @Override
