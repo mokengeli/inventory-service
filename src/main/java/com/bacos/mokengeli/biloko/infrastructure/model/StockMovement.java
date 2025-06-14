@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "stock_movements")
@@ -44,6 +44,6 @@ public class StockMovement {
     private String unitOfMeasure;
 
     @Column(name = "movement_date", nullable = false)
-    private LocalDateTime movementDate;  // Date du mouvement
+    private OffsetDateTime movementDate;  // Date du mouvement
 
 }

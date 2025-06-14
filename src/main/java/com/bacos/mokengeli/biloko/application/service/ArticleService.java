@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -78,14 +78,14 @@ public class ArticleService {
                     .productId(existingArticle.getProductId())
                     .quantity(updatedTotalVolume)
                     .createdAt(existingArticle.getCreatedAt())
-                    .updatedAt(LocalDateTime.now())
+                    .updatedAt(OffsetDateTime.now())
                     .build();
         } else {
             // Créer un nouvel article
             domainArticle = DomainArticle.builder()
                     .productId(product.getId())
                     .quantity(quantityToAdd)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(OffsetDateTime.now())
                     .build();
         }
         // Sauvegarder l'article via le port
@@ -111,7 +111,7 @@ public class ArticleService {
                 .newQuantity(domainArticle.getQuantity())
                 .observation(observation)
                 .unitOfMeasure(product.getUnitOfMeasure())
-                .movementDate(LocalDateTime.now())
+                .movementDate(OffsetDateTime.now())
                 .build();
 
 
@@ -159,7 +159,7 @@ public class ArticleService {
                 existingArticle = DomainArticle
                         .builder()
                         .quantity(0)
-                        .createdAt(LocalDateTime.now())
+                        .createdAt(OffsetDateTime.now())
                         .build();
             } else {
                 existingArticle = existingArticleOpt.get();
@@ -185,7 +185,7 @@ public class ArticleService {
                 observation = "Removal of " + domainActionArticle.getQuantity() +
                         " " + domainProduct.getUnitOfMeasure() + " for the product - " + domainProduct.getName();
             }
-            existingArticle.setUpdatedAt(LocalDateTime.now());
+            existingArticle.setUpdatedAt(OffsetDateTime.now());
             existingArticle.setQuantity(updatedTotalVolume);
             if (!noArticleFound) {
                 domainArticles.add(existingArticle);
@@ -201,7 +201,7 @@ public class ArticleService {
                     .newQuantity(updatedTotalVolume)
                     .unitOfMeasure(domainProduct.getUnitOfMeasure())
                     .observation(observation)
-                    .movementDate(LocalDateTime.now())
+                    .movementDate(OffsetDateTime.now())
                     .build();
 
             domainStockMovements.add(stockMovement);
@@ -270,14 +270,14 @@ public class ArticleService {
                     .productId(existingArticle.getProductId())
                     .quantity(updatedTotalVolume)
                     .createdAt(existingArticle.getCreatedAt())
-                    .updatedAt(LocalDateTime.now())
+                    .updatedAt(OffsetDateTime.now())
                     .build();
         } else {
             // Créer un nouvel article
             domainArticle = DomainArticle.builder()
                     .productId(product.getId())
                     .quantity(quantite)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(OffsetDateTime.now())
                     .build();
         }
         // Sauvegarder l'article via le port
@@ -303,7 +303,7 @@ public class ArticleService {
                 .newQuantity(domainArticle.getQuantity())
                 .observation(observation)
                 .unitOfMeasure(product.getUnitOfMeasure())
-                .movementDate(LocalDateTime.now())
+                .movementDate(OffsetDateTime.now())
                 .build();
 
 

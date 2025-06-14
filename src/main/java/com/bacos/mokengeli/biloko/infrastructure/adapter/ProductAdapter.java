@@ -2,7 +2,7 @@ package com.bacos.mokengeli.biloko.infrastructure.adapter;
 
 import com.bacos.mokengeli.biloko.application.domain.DomainArticle;
 import com.bacos.mokengeli.biloko.application.domain.DomainProduct;
-import com.bacos.mokengeli.biloko.application.domain.model.ConnectedUser;
+import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 import com.bacos.mokengeli.biloko.application.port.ProductPort;
 import com.bacos.mokengeli.biloko.infrastructure.mapper.ProductMapper;
 import com.bacos.mokengeli.biloko.infrastructure.model.Article;
@@ -14,13 +14,11 @@ import com.bacos.mokengeli.biloko.infrastructure.repository.UnitOfMeasureReposit
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import com.bacos.mokengeli.biloko.application.exception.ServiceException;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,7 +45,7 @@ public class ProductAdapter implements ProductPort {
         String unitOfMeasure = domainProduct.getUnitOfMeasure();
         UnitOfMeasure unitOfMeasure1 = this.unitOfMeasureRepository.findByName(unitOfMeasure)
                 .orElseThrow(() -> new ServiceException(UUID.randomUUID().toString(), "No unit of measure found with name: " + unitOfMeasure));
-        product.setCreatedAt(LocalDateTime.now());
+        product.setCreatedAt(OffsetDateTime.now());
         product.setUnitOfMeasure(unitOfMeasure1);
         product.setCode(UUID.randomUUID().toString());
         try {
@@ -102,7 +100,7 @@ public class ProductAdapter implements ProductPort {
     @Override
     public Page<DomainProduct> getAllProductsByTenant(String tenantCode, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return  productRepository.getAllProductOfTenantCode(tenantCode, pageable)
+        return productRepository.getAllProductOfTenantCode(tenantCode, pageable)
                 .map(product -> {
                     DomainProduct ligthDomain = ProductMapper.toLigthDomain(product);
                     Long id = product.getId();

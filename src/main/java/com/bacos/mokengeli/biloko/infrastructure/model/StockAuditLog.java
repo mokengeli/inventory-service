@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "stock_audit_logs")
@@ -34,6 +34,6 @@ public class StockAuditLog {
     private String description;  // Description de l'action effectuée
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;  // Date de l'audit
+    private OffsetDateTime createdAt;  // Date de l'audit
 }
 

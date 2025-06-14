@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -21,6 +21,6 @@ public class DomainStockMovement {
     private double newQuantity;
     private String observation;
     private String unitOfMeasure;
-    private LocalDateTime movementDate;
+    private OffsetDateTime movementDate;
 }
 
