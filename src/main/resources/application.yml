@@ -49,6 +49,6 @@ management:
         include: health,info,metrics
 logging:
   level:
-    com.zaxxer.hikari: DEBUG
+    com.zaxxer.hikari: INFO
 
 
