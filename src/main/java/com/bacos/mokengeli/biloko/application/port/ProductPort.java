@@ -22,7 +22,7 @@ public interface ProductPort {
 
     Optional<List<DomainProduct>> getAllProducts();
 
-    Page<DomainProduct> getAllProductsByTenant(String tenantCode, int page, int size);
+    Page<DomainProduct> getAllProductsByTenant(String tenantCode, int page, int size, String search);
 
     Set<String> getAllUnitOfMeasurement();
 }

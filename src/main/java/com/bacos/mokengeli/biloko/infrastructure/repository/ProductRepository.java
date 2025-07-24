@@ -27,4 +27,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.tenantCode = :tenantCode")
     Page<Product> getAllProductOfTenantCode(@Param("tenantCode") String tenantCode, Pageable pageable);
 
+    Page<Product> findByTenantCodeAndNameContainingIgnoreCase(
+            String tenantCode,
+            String name,
+            Pageable pageable
+    );
 }

@@ -122,7 +122,8 @@ public class ProductService {
         return this.productPort.isAllProductOfTenantCode(idsProduct, tenantCode);
     }
 
-    public Page<DomainProduct> getAllProductsByOrganisation(String tenantCode, int page, int size) throws ServiceException {
+    public Page<DomainProduct> getAllProductsByOrganisation(String tenantCode, int page, int size,
+                                                            String search) throws ServiceException {
         ConnectedUser connectedUser = this.userAppService.getConnectedUser();
         String employeeNumber = connectedUser.getEmployeeNumber();
         if (!this.userAppService.isAdminUser() && !connectedUser.getTenantCode().equals(tenantCode)) {
@@ -131,7 +132,7 @@ public class ProductService {
                     employeeNumber, connectedUser.getTenantCode(), tenantCode);
             throw new ServiceException(errorId, "You can't get products item owning by another partner");
         }
-        return productPort.getAllProductsByTenant(tenantCode, page, size);
+        return productPort.getAllProductsByTenant(tenantCode, page, size, search);
     }
 
     public Set<String> getAllUnitOfMeasurement() {

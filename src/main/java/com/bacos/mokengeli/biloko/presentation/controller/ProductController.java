@@ -74,15 +74,18 @@ public class ProductController {
     public ResponseEntity<Page<DomainProduct>> getAllProduct(
             @RequestParam("code") String tenantCode,
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size) {
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "search", required = false) String search  // ← ajouté
+    ) {
         try {
-            Page<DomainProduct> domainProducts = productService.getAllProductsByOrganisation(tenantCode, page, size);
+            Page<DomainProduct> domainProducts =
+                    productService.getAllProductsByOrganisation(tenantCode, page, size, search);
             return ResponseEntity.ok(domainProducts);
         } catch (ServiceException e) {
             throw new ResponseStatusWrapperException(HttpStatus.BAD_REQUEST, e.getMessage(), e.getTechnicalId());
         }
-
     }
+
 
     @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
     @GetMapping("/unitm/all")
