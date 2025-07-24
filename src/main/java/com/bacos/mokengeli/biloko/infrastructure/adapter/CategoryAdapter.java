@@ -49,9 +49,16 @@ public class CategoryAdapter implements CategoryPort {
     }
 
     @Override
-    public Page<DomainCategory> findAll(int page, int size) {
+    public Page<DomainCategory> findAll(int page, int size, String search) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Category> pageResult = categoryRepository.findAll(pageable);
+
+        Page<Category> pageResult;
+        if (search == null || search.trim().isEmpty()) {
+            pageResult = categoryRepository.findAll(pageable);
+        } else {
+            pageResult = categoryRepository.findByNameContainingIgnoreCase(search, pageable);
+        }
         return pageResult.map(CategoryMapper::toDomain);
     }
+
 }

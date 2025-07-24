@@ -12,4 +12,5 @@ public interface CategoryPort {
 
     Optional<DomainCategory> findById(Long categoryId);
 
-    Page<DomainCategory> findAll(int page, int size);}
+    Page<DomainCategory> findAll(int page, int size, String search);
+}
