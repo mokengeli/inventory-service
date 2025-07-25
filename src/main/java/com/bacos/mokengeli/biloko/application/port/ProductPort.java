@@ -24,5 +24,8 @@ public interface ProductPort {
 
     Page<DomainProduct> getAllProductsByTenant(String tenantCode, int page, int size, String search);
 
-    Set<String> getAllUnitOfMeasurement();
-}
+    Page<String> getAllUnitOfMeasurement(
+            int    page,
+            int    size,
+            String search
+    );}

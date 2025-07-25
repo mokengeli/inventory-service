@@ -135,9 +135,12 @@ public class ProductService {
         return productPort.getAllProductsByTenant(tenantCode, page, size, search);
     }
 
-    public Set<String> getAllUnitOfMeasurement() {
-
-        return this.productPort.getAllUnitOfMeasurement();
+    public Page<String> getAllUnitOfMeasurement(
+            int    page,
+            int    size,
+            String search
+    ) {
+        return productPort.getAllUnitOfMeasurement(page, size, search);
     }
 
 

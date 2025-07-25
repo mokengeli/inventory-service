@@ -99,8 +99,8 @@ public class ProductAdapter implements ProductPort {
     @Override
     public Page<DomainProduct> getAllProductsByTenant(
             String tenantCode,
-            int    page,
-            int    size,
+            int page,
+            int size,
             String search               // ← ajouté
     ) {
         Pageable pageable = PageRequest.of(page, size);
@@ -126,13 +126,15 @@ public class ProductAdapter implements ProductPort {
     }
 
     @Override
-    public Set<String> getAllUnitOfMeasurement() {
-        List<UnitOfMeasure> all = this.unitOfMeasureRepository.findAll();
-        if (all.isEmpty()) {
-            return Collections.emptySet();
+    public Page<String> getAllUnitOfMeasurement(
+            int page,
+            int size,
+            String search
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        if (search == null || search.trim().isEmpty()) {
+            return unitOfMeasureRepository.findAllNames(pageable);
         }
-        return all.stream().map(UnitOfMeasure::getName).collect(Collectors.toSet());
+        return unitOfMeasureRepository.findNamesBySearch(search, pageable);
     }
-
-
 }

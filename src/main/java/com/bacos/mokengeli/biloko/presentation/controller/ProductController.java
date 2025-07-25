@@ -89,8 +89,12 @@ public class ProductController {
 
     @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
     @GetMapping("/unitm/all")
-    public ResponseEntity<Set<String>> getAllUnitOfMeasurement() {
-        Set<String> unitOfM = productService.getAllUnitOfMeasurement();
+    public ResponseEntity<Page<String>> getAllUnitOfMeasurement(
+            @RequestParam(value = "page",   defaultValue = "0")  int    page,
+            @RequestParam(value = "size",   defaultValue = "10") int    size,
+            @RequestParam(value = "search", required = false)    String search
+    ) {
+        Page<String> unitOfM = productService.getAllUnitOfMeasurement(page, size, search);
         return ResponseEntity.ok(unitOfM);
     }
 
