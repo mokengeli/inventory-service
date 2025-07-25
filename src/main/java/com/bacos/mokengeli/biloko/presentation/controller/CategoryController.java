@@ -51,10 +51,14 @@ public class CategoryController {
     @PreAuthorize("hasAnyAuthority('VIEW_INVENTORY','EDIT_INVENTORY')")
     @GetMapping("/all")
     public ResponseEntity<Page<DomainCategory>> getAllCategories(
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size) {
-        Page<DomainCategory> domainCategories = categoryService.getAllCategories(page, size);
+            @RequestParam(name = "page", defaultValue = "0")     int page,
+            @RequestParam(name = "size", defaultValue = "10")    int size,
+            @RequestParam(name = "search", required = false)     String search // ← nouveau
+    ) {
+        Page<DomainCategory> domainCategories =
+                categoryService.getAllCategories(page, size, search);
         return ResponseEntity.ok(domainCategories);
     }
+
 
 }

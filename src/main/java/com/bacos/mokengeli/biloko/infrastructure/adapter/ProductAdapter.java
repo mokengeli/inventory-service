@@ -96,25 +96,33 @@ public class ProductAdapter implements ProductPort {
         return Optional.of(list);
     }
 
-    // Méthode mise à jour :
     @Override
-    public Page<DomainProduct> getAllProductsByTenant(String tenantCode, int page, int size) {
+    public Page<DomainProduct> getAllProductsByTenant(
+            String tenantCode,
+            int    page,
+            int    size,
+            String search               // ← ajouté
+    ) {
         Pageable pageable = PageRequest.of(page, size);
-        return productRepository.getAllProductOfTenantCode(tenantCode, pageable)
-                .map(product -> {
-                    DomainProduct ligthDomain = ProductMapper.toLigthDomain(product);
-                    Long id = product.getId();
-                    Optional<Article> articleOpt = this.articleRepository.findByProductId(id);
-                    if (articleOpt.isPresent()) {
-                        Article article = articleOpt.get();
-                        DomainArticle domainArticle = DomainArticle.builder()
-                                .id(article.getId())
-                                .quantity(article.getQuantity())
-                                .build();
-                        ligthDomain.setArticle(domainArticle);
-                    }
-                    return ligthDomain;
-                });
+
+        Page<Product> pageResult;
+        if (search == null || search.trim().isEmpty()) {
+            pageResult = productRepository.getAllProductOfTenantCode(tenantCode, pageable);
+        } else {
+            pageResult = productRepository
+                    .findByTenantCodeAndNameContainingIgnoreCase(tenantCode, search, pageable);
+        }
+
+        return pageResult.map(product -> {
+            DomainProduct dom = ProductMapper.toLigthDomain(product);
+            articleRepository.findByProductId(product.getId())
+                    .ifPresent(article ->
+                            dom.setArticle(DomainArticle.builder()
+                                    .id(article.getId())
+                                    .quantity(article.getQuantity())
+                                    .build()));
+            return dom;
+        });
     }
 
     @Override

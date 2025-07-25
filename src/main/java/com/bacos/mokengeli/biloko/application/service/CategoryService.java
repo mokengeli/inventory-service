@@ -53,7 +53,7 @@ public class CategoryService {
     }
 
     // Modified method signature and body:
-    public Page<DomainCategory> getAllCategories(int page, int size) {
-        return categoryPort.findAll(page, size);
+    public Page<DomainCategory> getAllCategories(int page, int size, String search) {
+        return categoryPort.findAll(page, size, search);
     }
 }
