@@ -2,7 +2,9 @@ name: Build & Publish Docker Image
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, develop ]
+    tags:
+      - 'v*.*.*'
 
 permissions:
   contents: read
@@ -15,6 +17,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Determine environment
+        id: env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]] || [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "TAG_PREFIX=prod" >> $GITHUB_ENV
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "TAG_PREFIX=preprod" >> $GITHUB_ENV
+            echo "ENVIRONMENT=preprod" >> $GITHUB_ENV
+          else
+            echo "TAG_PREFIX=dev" >> $GITHUB_ENV
+            echo "ENVIRONMENT=development" >> $GITHUB_ENV
+          fi
+          
+          # SHA court pour tous les tags
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
       - name: Log in to GHCR
         uses: docker/login-action@v2
         with:
@@ -24,13 +43,24 @@ jobs:
 
       - name: Build image
         run: |
+          # Build avec les tags environnement-specific
           docker build \
-            -t ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.sha }} \
-            -t ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest \
+            --build-arg BUILD_ENV=${{ env.ENVIRONMENT }} \
+            -t ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_PREFIX }}-latest \
+            -t ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_PREFIX }}-${{ env.SHORT_SHA }} \
+            -t ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_PREFIX }}-${{ github.sha }} \
             .
 
       - name: Push image
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.sha }}
-          docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
-      
+          docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_PREFIX }}-latest
+          docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_PREFIX }}-${{ env.SHORT_SHA }}
+          docker push ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.TAG_PREFIX }}-${{ github.sha }}
+
+      - name: Summary
+        run: |
+          echo "## 🐳 Docker Image Published" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ env.ENVIRONMENT }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.TAG_PREFIX }}-latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.TAG_PREFIX }}-${{ env.SHORT_SHA }}\`" >> $GITHUB_STEP_SUMMARY
